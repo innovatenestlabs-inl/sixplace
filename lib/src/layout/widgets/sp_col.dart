@@ -62,7 +62,7 @@ class SPCol extends StatelessWidget {
 
   int resolveSpan(
     double width, {
-    SPBreakpoints breakpoints = SPBreakpoints.bootstrap,
+    SPBreakpoints breakpoints = SPBreakpoints.standard,
   }) {
     return specification.resolve(width, breakpoints: breakpoints);
   }

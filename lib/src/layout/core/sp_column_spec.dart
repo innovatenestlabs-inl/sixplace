@@ -49,7 +49,7 @@ class SPColumnSpec {
   /// Returns the active column span for a parent width.
   int resolve(
     double width, {
-    SPBreakpoints breakpoints = SPBreakpoints.bootstrap,
+    SPBreakpoints breakpoints = SPBreakpoints.standard,
   }) {
     return SPResponsiveValue<int>(
       base: span,
@@ -64,7 +64,7 @@ class SPColumnSpec {
   /// Returns the active span as a fraction between 0 and 1.
   double widthFactor(
     double width, {
-    SPBreakpoints breakpoints = SPBreakpoints.bootstrap,
+    SPBreakpoints breakpoints = SPBreakpoints.standard,
   }) {
     return resolve(width, breakpoints: breakpoints) / columnCount;
   }

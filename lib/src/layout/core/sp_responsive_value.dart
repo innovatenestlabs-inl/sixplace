@@ -28,7 +28,7 @@ class SPResponsiveValue<T> {
   /// Resolves the value using the supplied available width.
   T resolve(
     double width, {
-    SPBreakpoints breakpoints = SPBreakpoints.bootstrap,
+    SPBreakpoints breakpoints = SPBreakpoints.standard,
   }) {
     return resolveBreakpoint(breakpoints.resolve(width));
   }

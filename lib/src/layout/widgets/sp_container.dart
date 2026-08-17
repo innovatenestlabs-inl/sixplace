@@ -28,7 +28,7 @@ class SPContainerWidths {
 
   double resolve(
     double width, {
-    SPBreakpoints breakpoints = SPBreakpoints.bootstrap,
+    SPBreakpoints breakpoints = SPBreakpoints.standard,
   }) {
     final breakpoint = breakpoints.resolve(width);
 
@@ -76,7 +76,7 @@ class SPContainer extends StatelessWidget {
     this.fluid = false,
     this.padding = const EdgeInsets.symmetric(horizontal: 12),
     this.alignment = Alignment.topCenter,
-    this.breakpoints = SPBreakpoints.bootstrap,
+    this.breakpoints = SPBreakpoints.standard,
     this.widths = SPContainerWidths.bootstrap,
   });
 
@@ -85,7 +85,7 @@ class SPContainer extends StatelessWidget {
     required this.child,
     this.padding = const EdgeInsets.symmetric(horizontal: 12),
     this.alignment = Alignment.topCenter,
-    this.breakpoints = SPBreakpoints.bootstrap,
+    this.breakpoints = SPBreakpoints.standard,
     this.widths = SPContainerWidths.bootstrap,
   }) : fluid = true;
 

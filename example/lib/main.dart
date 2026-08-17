@@ -40,7 +40,7 @@ class LayoutExamplePage extends StatelessWidget {
             child: LayoutBuilder(
               builder: (context, constraints) {
                 final width = constraints.maxWidth;
-                final breakpoint = SPBreakpoints.bootstrap.resolve(width);
+                final breakpoint = SPBreakpoints.standard.resolve(width);
 
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,

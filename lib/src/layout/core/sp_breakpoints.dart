@@ -19,7 +19,7 @@ class SPBreakpoints {
        assert(xl > lg, 'xl must be greater than lg.'),
        assert(xxl > xl, 'xxl must be greater than xl.');
 
-  static const SPBreakpoints bootstrap = SPBreakpoints();
+  static const SPBreakpoints standard = SPBreakpoints();
 
   final double sm;
   final double md;
