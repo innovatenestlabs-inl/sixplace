@@ -46,7 +46,6 @@ class SPRow extends StatelessWidget {
   final double verticalGap;
 
   final SPBreakpoints breakpoints;
-
   final WrapAlignment alignment;
   final WrapAlignment runAlignment;
   final WrapCrossAlignment crossAxisAlignment;
@@ -75,36 +74,68 @@ class SPRow extends StatelessWidget {
         final availableWidth = constraints.maxWidth;
         final halfHorizontalGap = horizontalGap / 2;
 
-        final resolvedChildren = children
+        // 1. Sort children by their responsive order
+        final sortedChildren = List<SPCol>.of(children)
+          ..sort((a, b) {
+            final orderA = a.resolveOrder(
+              availableWidth,
+              breakpoints: breakpoints,
+            );
+            final orderB = b.resolveOrder(
+              availableWidth,
+              breakpoints: breakpoints,
+            );
+            return orderA.compareTo(orderB);
+          });
+
+        // 2. Map sorted children to their sized widgets
+        final resolvedChildren = sortedChildren
             .map((SPCol column) {
               final span = column.resolveSpan(
+                availableWidth,
+                breakpoints: breakpoints,
+              );
+              final offset = column.resolveOffset(
                 availableWidth,
                 breakpoints: breakpoints,
               );
 
               final calculatedWidth =
                   availableWidth * span / SPColumnSpec.columnCount;
+              final calculatedOffsetWidth =
+                  availableWidth * offset / SPColumnSpec.columnCount;
 
               /*
-             * Prevent tiny floating-point excesses such as:
-             *
-             * 8 / 12 + 4 / 12 = 12.0000000001
-             *
-             * from producing an unexpected extra row.
-             */
+               * Prevent tiny floating-point excesses such as:
+               * 8 / 12 + 4 / 12 = 12.0000000001
+               * from producing an unexpected extra row.
+               */
               final columnWidth =
                   span == SPColumnSpec.columnCount ||
                       calculatedWidth <= _precisionTolerance
                   ? calculatedWidth
                   : calculatedWidth - _precisionTolerance;
 
-              return SizedBox(
+              // The core column wrapper
+              Widget childWidget = SizedBox(
                 width: columnWidth,
                 child: Padding(
                   padding: EdgeInsets.symmetric(horizontal: halfHorizontalGap),
                   child: column,
                 ),
               );
+
+              // Apply offset via directional padding (supports RTL automatically)
+              if (offset > 0) {
+                childWidget = Padding(
+                  padding: EdgeInsetsDirectional.only(
+                    start: calculatedOffsetWidth,
+                  ),
+                  child: childWidget,
+                );
+              }
+
+              return childWidget;
             })
             .toList(growable: false);
 

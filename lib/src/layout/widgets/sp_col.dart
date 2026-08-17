@@ -6,9 +6,7 @@ import '../core/sp_column_spec.dart';
 /// A responsive column intended to be placed inside an SPRow.
 ///
 /// The base span defaults to 12. Therefore:
-///
-/// SPCol(md: 6)
-///
+/// `SPCol(md: 6, child: ...)`
 /// is full-width on smaller layouts and half-width from md upward.
 class SPCol extends StatelessWidget {
   const SPCol({
@@ -19,52 +17,78 @@ class SPCol extends StatelessWidget {
     this.lg,
     this.xl,
     this.xxl,
+    this.offset = 0,
+    this.offsetSm,
+    this.offsetMd,
+    this.offsetLg,
+    this.offsetXl,
+    this.offsetXxl,
+    this.order = 0,
+    this.orderSm,
+    this.orderMd,
+    this.orderLg,
+    this.orderXl,
+    this.orderXxl,
     required this.child,
-  }) : assert(
-         span >= 1 && span <= SPColumnSpec.columnCount,
-         'span must be from 1 to 12.',
-       ),
-       assert(
-         sm == null || (sm >= 1 && sm <= SPColumnSpec.columnCount),
-         'sm must be from 1 to 12.',
-       ),
-       assert(
-         md == null || (md >= 1 && md <= SPColumnSpec.columnCount),
-         'md must be from 1 to 12.',
-       ),
-       assert(
-         lg == null || (lg >= 1 && lg <= SPColumnSpec.columnCount),
-         'lg must be from 1 to 12.',
-       ),
-       assert(
-         xl == null || (xl >= 1 && xl <= SPColumnSpec.columnCount),
-         'xl must be from 1 to 12.',
-       ),
-       assert(
-         xxl == null || (xxl >= 1 && xxl <= SPColumnSpec.columnCount),
-         'xxl must be from 1 to 12.',
-       );
+  });
 
   /// Base span beginning from the extra-small breakpoint.
   final int span;
+  final int? sm, md, lg, xl, xxl;
 
-  final int? sm;
-  final int? md;
-  final int? lg;
-  final int? xl;
-  final int? xxl;
+  /// Base offset (empty space before the column) beginning from the extra-small breakpoint.
+  final int offset;
+  final int? offsetSm, offsetMd, offsetLg, offsetXl, offsetXxl;
+
+  /// Base visual order beginning from the extra-small breakpoint.
+  final int order;
+  final int? orderSm, orderMd, orderLg, orderXl, orderXxl;
 
   final Widget child;
 
+  /// Returns the configured SPColumnSpec for this column.
   SPColumnSpec get specification {
-    return SPColumnSpec(span: span, sm: sm, md: md, lg: lg, xl: xl, xxl: xxl);
+    return SPColumnSpec(
+      span: span,
+      sm: sm,
+      md: md,
+      lg: lg,
+      xl: xl,
+      xxl: xxl,
+      offset: offset,
+      offsetSm: offsetSm,
+      offsetMd: offsetMd,
+      offsetLg: offsetLg,
+      offsetXl: offsetXl,
+      offsetXxl: offsetXxl,
+      order: order,
+      orderSm: orderSm,
+      orderMd: orderMd,
+      orderLg: orderLg,
+      orderXl: orderXl,
+      orderXxl: orderXxl,
+    );
   }
 
   int resolveSpan(
     double width, {
     SPBreakpoints breakpoints = SPBreakpoints.standard,
   }) {
-    return specification.resolve(width, breakpoints: breakpoints);
+    return specification.resolveSpan(width, breakpoints: breakpoints);
+  }
+
+  int resolveOffset(
+    double width, {
+    SPBreakpoints breakpoints = SPBreakpoints.standard,
+  }) {
+    return specification.resolveOffset(width, breakpoints: breakpoints);
+  }
+
+  int resolveOrder(
+    double width, {
+    SPBreakpoints breakpoints = SPBreakpoints.standard,
+  }) {
+    return specification.resolveOrder(width, breakpoints: breakpoints);
   }
 
   @override
