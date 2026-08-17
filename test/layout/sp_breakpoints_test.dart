@@ -3,7 +3,7 @@ import 'package:sixplace/layout.dart';
 
 void main() {
   group('SPBreakpoints', () {
-    const breakpoints = SPBreakpoints.bootstrap;
+    const breakpoints = SPBreakpoints.standard;
 
     test('uses Bootstrap-compatible defaults', () {
       expect(breakpoints.sm, 576);

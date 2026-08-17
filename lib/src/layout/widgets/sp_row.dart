@@ -15,7 +15,7 @@ class SPRow extends StatelessWidget {
     this.gap = 0,
     double? horizontalGap,
     double? verticalGap,
-    this.breakpoints = SPBreakpoints.bootstrap,
+    this.breakpoints = SPBreakpoints.standard,
     this.alignment = WrapAlignment.start,
     this.runAlignment = WrapAlignment.start,
     this.crossAxisAlignment = WrapCrossAlignment.start,
