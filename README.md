@@ -351,4 +351,4 @@ Sixplace is available under the [MIT License](LICENSE).
 ## Maintainer
 
 **Innovate Nest Labs**  
-Software Engineer, Bangladesh
+Digital Solutions, Bangladesh
