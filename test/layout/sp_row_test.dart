@@ -123,6 +123,64 @@ void main() {
     expect(verticalContentGap, closeTo(12, 0.01));
   });
 
+  testWidgets('resolves responsive gap from parent width', (
+    WidgetTester tester,
+  ) async {
+    Widget responsiveRow() {
+      return const SPRow(
+        responsiveGap: SPResponsiveValue<double>(base: 8, md: 24),
+        children: [
+          SPCol(span: 6, child: SizedBox(key: firstKey, height: 20)),
+          SPCol(span: 6, child: SizedBox(key: secondKey, height: 20)),
+        ],
+      );
+    }
+
+    await tester.pumpWidget(harness(width: 600, child: responsiveRow()));
+
+    var contentGap =
+        tester.getTopLeft(find.byKey(secondKey)).dx -
+        tester.getTopRight(find.byKey(firstKey)).dx;
+
+    expect(contentGap, closeTo(8, 0.01));
+
+    expect(tester.getSize(find.byKey(firstKey)).width, closeTo(292, 0.01));
+
+    await tester.pumpWidget(harness(width: 800, child: responsiveRow()));
+
+    contentGap =
+        tester.getTopLeft(find.byKey(secondKey)).dx -
+        tester.getTopRight(find.byKey(firstKey)).dx;
+
+    expect(contentGap, closeTo(24, 0.01));
+
+    expect(tester.getSize(find.byKey(firstKey)).width, closeTo(376, 0.01));
+  });
+
+  testWidgets('explicit axis gap overrides responsive general gap', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(
+      harness(
+        width: 800,
+        child: const SPRow(
+          horizontalGap: 10,
+          responsiveGap: SPResponsiveValue<double>(base: 8, md: 24),
+          children: [
+            SPCol(span: 6, child: SizedBox(key: firstKey, height: 20)),
+            SPCol(span: 6, child: SizedBox(key: secondKey, height: 20)),
+          ],
+        ),
+      ),
+    );
+
+    final contentGap =
+        tester.getTopLeft(find.byKey(secondKey)).dx -
+        tester.getTopRight(find.byKey(firstKey)).dx;
+
+    expect(contentGap, closeTo(10, 0.01));
+  });
+
   testWidgets('nested rows use allocated parent-column width', (
     WidgetTester tester,
   ) async {

@@ -1,9 +1,11 @@
-// src>widgets>sp_container.dart
+// lib/src/layout/widgets/sp_container.dart
+
 import 'package:flutter/widgets.dart';
 
 import '../core/sp_breakpoints.dart';
+import '../core/sp_responsive_value.dart';
 
-/// Maximum widths used by a fixed SPContainer.
+/// Maximum widths used by a fixed [SPContainer].
 @immutable
 class SPContainerWidths {
   /// Defaults match Bootstrap 5 container widths.
@@ -27,6 +29,7 @@ class SPContainerWidths {
   final double xl;
   final double xxl;
 
+  /// Resolves the maximum container width for the available parent width.
   double resolve(
     double width, {
     SPBreakpoints breakpoints = SPBreakpoints.standard,
@@ -36,19 +39,14 @@ class SPContainerWidths {
     switch (breakpoint) {
       case SPBreakpoint.xs:
         return width;
-
       case SPBreakpoint.sm:
         return sm > width ? width : sm;
-
       case SPBreakpoint.md:
         return md > width ? width : md;
-
       case SPBreakpoint.lg:
         return lg > width ? width : lg;
-
       case SPBreakpoint.xl:
         return xl > width ? width : xl;
-
       case SPBreakpoint.xxl:
         return xxl > width ? width : xxl;
     }
@@ -67,15 +65,29 @@ class SPContainerWidths {
 
   @override
   int get hashCode => Object.hash(sm, md, lg, xl, xxl);
+
+  @override
+  String toString() {
+    return 'SPContainerWidths('
+        'sm: $sm, '
+        'md: $md, '
+        'lg: $lg, '
+        'xl: $xl, '
+        'xxl: $xxl'
+        ')';
+  }
 }
 
-/// Centers content inside a fixed-width or fluid container.
+/// Centers content inside a fixed-width or fluid responsive container.
+///
+/// Responsive decisions use the immediate parent's available width.
 class SPContainer extends StatelessWidget {
   const SPContainer({
     super.key,
     required this.child,
     this.fluid = false,
     this.padding = const EdgeInsets.symmetric(horizontal: 12),
+    this.responsivePadding,
     this.alignment = Alignment.topCenter,
     this.breakpoints = SPBreakpoints.standard,
     this.widths = SPContainerWidths.bootstrap,
@@ -85,6 +97,7 @@ class SPContainer extends StatelessWidget {
     super.key,
     required this.child,
     this.padding = const EdgeInsets.symmetric(horizontal: 12),
+    this.responsivePadding,
     this.alignment = Alignment.topCenter,
     this.breakpoints = SPBreakpoints.standard,
     this.widths = SPContainerWidths.bootstrap,
@@ -95,7 +108,28 @@ class SPContainer extends StatelessWidget {
   /// When true, the container uses all available width.
   final bool fluid;
 
+  /// Static padding used when [responsivePadding] is null.
   final EdgeInsetsGeometry padding;
+
+  /// Optional responsive padding.
+  ///
+  /// When provided, this takes precedence over [padding] and resolves using
+  /// the immediate parent's available width.
+  ///
+  /// Example:
+  ///
+  /// ```dart
+  /// SPContainer.fluid(
+  ///   responsivePadding:
+  ///       const SPResponsiveValue<EdgeInsetsGeometry>(
+  ///     base: EdgeInsets.all(8),
+  ///     lg: EdgeInsets.all(16),
+  ///   ),
+  ///   child: content,
+  /// )
+  /// ```
+  final SPResponsiveValue<EdgeInsetsGeometry>? responsivePadding;
+
   final AlignmentGeometry alignment;
   final SPBreakpoints breakpoints;
   final SPContainerWidths widths;
@@ -117,11 +151,18 @@ class SPContainer extends StatelessWidget {
             ? availableWidth
             : widths.resolve(availableWidth, breakpoints: breakpoints);
 
+        final resolvedPadding =
+            responsivePadding?.resolve(
+              availableWidth,
+              breakpoints: breakpoints,
+            ) ??
+            padding;
+
         return Align(
           alignment: alignment,
           child: SizedBox(
             width: containerWidth,
-            child: Padding(padding: padding, child: child),
+            child: Padding(padding: resolvedPadding, child: child),
           ),
         );
       },
