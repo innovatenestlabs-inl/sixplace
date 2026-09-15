@@ -142,7 +142,75 @@ Or import only the layout API:
 import 'package:sixplace/layout.dart';
 ```
 
-## Breakpoints
+## Design-scaled numeric sizing and typography
+
+Sixplace also provides CSS-inspired numeric sizing helpers for
+responsive dimensions and typography.
+
+### Numeric sizing formulas
+
+- `n.w = n * (logicalScreenWidth / designWidth)`
+- `n.h = n * (logicalScreenHeight / designHeight)`
+
+These helpers are based on logical Flutter pixels and intentionally do not use
+`devicePixelRatio`.
+
+```dart
+import 'package:sixplace/sixplace.dart';
+
+SixPlace.init(
+  context,
+  designSize: const Size(390, 844),
+  rootFontSize: 16.0,
+);
+
+final cardWidth = 100.w;
+final heroHeight = 48.h;
+```
+
+### Typography contract
+
+Sixplace uses a single accessibility application point at render time:
+
+- `n.sp = textScaler.scale(n * fontScale)`
+- `n.rem = textScaler.scale(n * rootFontSize * fontScale)`
+
+`fontScale` is based on the current width ratio against the configured design
+size. This keeps `.sp` and `.rem` consistent with the design width while still
+respecting the user's text-scaling preferences.
+
+```dart
+Text(
+  'Large heading',
+  style: TextStyle(fontSize: 16.sp),
+  textScaler: TextScaler.noScaling,
+);
+```
+
+The numeric value already includes accessibility scaling. When `Text` receives a
+`TextStyle` with a font size produced by `.sp` or `.rem`, the pair with
+`TextScaler.noScaling` keeps the logical size stable and predictable. The
+package does not globally disable system text scaling for the application.
+
+### Parent-relative `em`
+
+Use `em` with a descendant context to resolve against the nearest inherited
+`DefaultTextStyle.fontSize`:
+
+```dart
+DefaultTextStyle(
+  style: const TextStyle(fontSize: 18),
+  child: Text(
+    'Inherited size',
+    style: TextStyle(fontSize: 1.5.em(context)),
+  ),
+);
+```
+
+If no inherited font size is available, Sixplace falls back to the configured
+root font size.
+
+### Breakpoints
 
 Sixplace uses familiar mobile-first breakpoint boundaries:
 

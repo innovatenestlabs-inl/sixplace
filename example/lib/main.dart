@@ -11,250 +11,220 @@ class SixplaceExampleApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Sixplace Layout Example',
+      title: 'Sixplace',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         useMaterial3: true,
         colorSchemeSeed: const Color(0xFF5B5BD6),
         scaffoldBackgroundColor: const Color(0xFFF6F7FB),
       ),
-      home: const LayoutExamplePage(),
+      home: const SixPlaceScope(
+        designSize: Size(390, 844),
+        rootFontSize: 16,
+        child: ResponsiveSizingExamplePage(),
+      ),
     );
   }
 }
 
-class LayoutExamplePage extends StatelessWidget {
-  const LayoutExamplePage({super.key});
+class ResponsiveSizingExamplePage extends StatefulWidget {
+  const ResponsiveSizingExamplePage({super.key});
+
+  @override
+  State<ResponsiveSizingExamplePage> createState() =>
+      _ResponsiveSizingExamplePageState();
+}
+
+class _ResponsiveSizingExamplePageState
+    extends State<ResponsiveSizingExamplePage> {
+  double textScale = 1.0;
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: const SPAppBar(
-        title: 'Six Place Layout Example',
-        centerTitle: false,
-      ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: SPContainer.fluid(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                final width = constraints.maxWidth;
-                final breakpoint = SPBreakpoints.standard.resolve(width);
+    SixPlace.init(context, designSize: const Size(390, 844), rootFontSize: 16);
 
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _BreakpointBanner(width: width, breakpoint: breakpoint),
-                    const SizedBox(height: 32),
+    final screen = MediaQuery.sizeOf(context);
+    final width = 100.w;
+    final height = 48.h;
+    final bodyText = 16.sp;
+    final leadText = 1.5.rem;
+    final parentText = 1.5.em(context);
 
-                    const _SectionTitle(
-                      title: 'Bootstrap-style two-column layout',
-                      description:
-                          'One column on mobile and two columns from md.',
-                    ),
-                    const SizedBox(height: 16),
-
-                    const SPRow(
-                      gap: 16,
-                      children: [
-                        SPCol(
-                          md: 6,
-                          child: _DemoCard(
-                            title: 'Card 1',
-                            description: 'This is the first responsive card.',
-                            specification: 'SPCol(md: 6)',
-                            icon: Icons.dashboard_outlined,
-                            color: Color(0xFF5B5BD6),
-                          ),
-                        ),
-                        SPCol(
-                          md: 6,
-                          child: _DemoCard(
-                            title: 'Card 2',
-                            description: 'This is the second responsive card.',
-                            specification: 'SPCol(md: 6)',
-                            icon: Icons.widgets_outlined,
-                            color: Color(0xFF00897B),
-                          ),
-                        ),
-                      ],
-                    ),
-
-                    const SizedBox(height: 40),
-
-                    const _SectionTitle(
-                      title: 'Three-column layout',
-                      description:
-                          'One column on mobile, two from sm, and three from lg.',
-                    ),
-                    const SizedBox(height: 16),
-
-                    const SPRow(
-                      gap: 16,
-                      children: [
-                        SPCol(
-                          sm: 6,
-                          lg: 4,
-                          child: _DemoCard(
-                            title: 'Layout',
-                            description: 'Responsive grids, rows and columns.',
-                            specification: 'sm: 6, lg: 4',
-                            icon: Icons.grid_view_rounded,
-                            color: Color(0xFF1565C0),
-                          ),
-                        ),
-                        SPCol(
-                          sm: 6,
-                          lg: 4,
-                          child: _DemoCard(
-                            title: 'Network',
-                            description:
-                                'Requests, authentication and retries.',
-                            specification: 'sm: 6, lg: 4',
-                            icon: Icons.cloud_outlined,
-                            color: Color(0xFFE65100),
-                          ),
-                        ),
-                        SPCol(
-                          sm: 6,
-                          lg: 4,
-                          child: _DemoCard(
-                            title: 'Feedback',
-                            description:
-                                'Toasts, alerts, loaders and messages.',
-                            specification: 'sm: 6, lg: 4',
-                            icon: Icons.notifications_none_rounded,
-                            color: Color(0xFF7B1FA2),
-                          ),
-                        ),
-                      ],
-                    ),
-
-                    const SizedBox(height: 40),
-
-                    const _SectionTitle(
-                      title: 'Unequal columns',
-                      description:
-                          'A wider content area with a smaller sidebar.',
-                    ),
-                    const SizedBox(height: 16),
-
-                    const SPRow(
-                      gap: 16,
-                      children: [
-                        SPCol(
-                          lg: 8,
-                          child: _DemoCard(
-                            title: 'Main content',
-                            description:
-                                'Uses eight of the twelve available columns.',
-                            specification: 'SPCol(lg: 8)',
-                            icon: Icons.article_outlined,
-                            color: Color(0xFF2E7D32),
-                          ),
-                        ),
-                        SPCol(
-                          lg: 4,
-                          child: _DemoCard(
-                            title: 'Sidebar',
-                            description:
-                                'Uses four of the twelve available columns.',
-                            specification: 'SPCol(lg: 4)',
-                            icon: Icons.view_sidebar_outlined,
-                            color: Color(0xFFC62828),
-                          ),
-                        ),
-                      ],
-                    ),
-
-                    const SizedBox(height: 32),
-                  ],
-                );
-              },
-            ),
-          ),
+    final content = MediaQuery(
+      data: MediaQuery.of(
+        context,
+      ).copyWith(textScaler: TextScaler.linear(textScale)),
+      child: Scaffold(
+        appBar: const SPAppBar(
+          title: 'Sixplace sizing + typography',
+          centerTitle: false,
         ),
-      ),
-    );
-  }
-}
-
-class _BreakpointBanner extends StatelessWidget {
-  const _BreakpointBanner({required this.width, required this.breakpoint});
-
-  final double width;
-  final SPBreakpoint breakpoint;
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: colorScheme.primaryContainer,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Wrap(
-        spacing: 16,
-        runSpacing: 12,
-        crossAxisAlignment: WrapCrossAlignment.center,
-        children: [
-          Icon(Icons.devices_rounded, color: colorScheme.onPrimaryContainer),
-          Text(
-            'Available width: ${width.toStringAsFixed(0)} px',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              color: colorScheme.onPrimaryContainer,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: colorScheme.primary,
-              borderRadius: BorderRadius.circular(50),
-            ),
-            child: Text(
-              _breakpointName(breakpoint).toUpperCase(),
-              style: TextStyle(
-                color: colorScheme.onPrimary,
-                fontWeight: FontWeight.bold,
+        body: SafeArea(
+          child: SingleChildScrollView(
+            child: SPContainer.fluid(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.primaryContainer,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Viewport: ${screen.width.toStringAsFixed(0)} × ${screen.height.toStringAsFixed(0)}',
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Design size: 390 × 844 | Root font: 16px | Text scale: ${textScale.toStringAsFixed(2)}x',
+                          style: Theme.of(context).textTheme.bodyMedium,
+                        ),
+                        const SizedBox(height: 12),
+                        Slider(
+                          value: textScale,
+                          min: 0.8,
+                          max: 2,
+                          divisions: 12,
+                          label: 'Text scale ${textScale.toStringAsFixed(2)}x',
+                          onChanged: (value) =>
+                              setState(() => textScale = value),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 18),
+                  const Text(
+                    'Numeric sizing',
+                    style: TextStyle(fontWeight: FontWeight.w700, fontSize: 22),
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _MetricCard(
+                          label: '100.w',
+                          value: '${width.toStringAsFixed(1)} px',
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _MetricCard(
+                          label: '48.h',
+                          value: '${height.toStringAsFixed(1)} px',
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  const Text(
+                    'Typography',
+                    style: TextStyle(fontWeight: FontWeight.w700, fontSize: 22),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    '16.sp = ${bodyText.toStringAsFixed(2)} px',
+                    style: TextStyle(fontSize: 16.sp),
+                    textScaler: TextScaler.noScaling,
+                  ),
+                  Text(
+                    '1.5.rem = ${leadText.toStringAsFixed(2)} px',
+                    style: TextStyle(fontSize: 1.5.rem),
+                    textScaler: TextScaler.noScaling,
+                  ),
+                  DefaultTextStyle(
+                    style: const TextStyle(fontSize: 18),
+                    child: Text(
+                      '1.5.em = ${parentText.toStringAsFixed(2)} px',
+                      style: TextStyle(fontSize: 1.5.em(context)),
+                      textScaler: TextScaler.noScaling,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  const Text(
+                    'Layout integration',
+                    style: TextStyle(fontWeight: FontWeight.w700, fontSize: 22),
+                  ),
+                  const SizedBox(height: 12),
+                  const SPRow(
+                    gap: 16,
+                    children: [
+                      SPCol(
+                        sm: 6,
+                        md: 4,
+                        child: _DemoCard(
+                          title: 'Layout',
+                          description:
+                              'Responsive grid continues to work without init on each widget.',
+                          icon: Icons.grid_view_rounded,
+                          color: Color(0xFF5B5BD6),
+                        ),
+                      ),
+                      SPCol(
+                        sm: 6,
+                        md: 4,
+                        child: _DemoCard(
+                          title: 'Sizing',
+                          description:
+                              'Values resolve from the active viewport and design dimensions.',
+                          icon: Icons.straighten_rounded,
+                          color: Color(0xFF00897B),
+                        ),
+                      ),
+                      SPCol(
+                        sm: 12,
+                        md: 4,
+                        child: _DemoCard(
+                          title: 'Text',
+                          description:
+                              'Typography uses the live TextScaler once at render time.',
+                          icon: Icons.text_fields_rounded,
+                          color: Color(0xFFE65100),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
           ),
-        ],
+        ),
       ),
     );
+
+    return content;
   }
 }
 
-class _SectionTitle extends StatelessWidget {
-  const _SectionTitle({required this.title, required this.description});
+class _MetricCard extends StatelessWidget {
+  const _MetricCard({required this.label, required this.value});
 
-  final String title;
-  final String description;
+  final String label;
+  final String value;
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          title,
-          style: Theme.of(
-            context,
-          ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 6),
-        Text(
-          description,
-          style: Theme.of(
-            context,
-          ).textTheme.bodyLarge?.copyWith(color: Colors.black54),
-        ),
-      ],
+    final scheme = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: scheme.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: scheme.outlineVariant),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label, style: Theme.of(context).textTheme.labelLarge),
+          const SizedBox(height: 8),
+          Text(value, style: Theme.of(context).textTheme.titleLarge),
+        ],
+      ),
     );
   }
 }
@@ -263,14 +233,12 @@ class _DemoCard extends StatelessWidget {
   const _DemoCard({
     required this.title,
     required this.description,
-    required this.specification,
     required this.icon,
     required this.color,
   });
 
   final String title;
   final String description;
-  final String specification;
   final IconData icon;
   final Color color;
 
@@ -316,31 +284,10 @@ class _DemoCard extends StatelessWidget {
                   ).textTheme.bodyMedium?.copyWith(color: Colors.black54),
                 ),
               ),
-              Text(
-                specification,
-                style: TextStyle(color: color, fontWeight: FontWeight.w600),
-              ),
             ],
           ),
         ),
       ),
     );
-  }
-}
-
-String _breakpointName(SPBreakpoint breakpoint) {
-  switch (breakpoint) {
-    case SPBreakpoint.xs:
-      return 'xs';
-    case SPBreakpoint.sm:
-      return 'sm';
-    case SPBreakpoint.md:
-      return 'md';
-    case SPBreakpoint.lg:
-      return 'lg';
-    case SPBreakpoint.xl:
-      return 'xl';
-    case SPBreakpoint.xxl:
-      return 'xxl';
   }
 }

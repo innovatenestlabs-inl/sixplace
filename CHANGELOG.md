@@ -1,3 +1,26 @@
+## 0.0.3
+
+### Added
+
+- Added design-scaled numeric sizing helpers through `.w`, `.h`, `.sp`,
+  `.rem`, and `.em(context)`.
+- Added shared Sixplace initialization with `SixPlace.init(context, ...)` and
+  `SixPlaceScope` for design-size and root-font configuration.
+- Added support for context-free numeric sizing and typography metrics that
+  respond to viewport resize and `TextScaler` updates.
+- Added `SixPlaceMetrics` for validation, design scaling, and root-relative
+  typography calculations.
+- Added numeric sizing and typography examples to the sample app.
+- Added focused tests for initialization, design scaling, root-relative sizing,
+  and parent-relative `em` resolution.
+
+### Changed
+
+- The root package now exposes both the original responsive layout API and the
+  numeric sizing/typography helpers.
+- User-facing documentation clarifies the distinction between breakpoint-based
+  layout design and design-draft scaling.
+
 ## 0.0.2
 
 ### Added
