@@ -12,3 +12,6 @@ export 'src/layout/widgets/sp_responsive_sized_box.dart';
 export 'src/layout/widgets/sp_row.dart';
 export 'src/layout/widgets/sp_scaffold.dart';
 export 'src/layout/widgets/sp_visibility.dart';
+
+export 'src/core/sixplace_core.dart';
+export 'src/core/sixplace_extensions.dart';
