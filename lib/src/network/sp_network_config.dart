@@ -80,7 +80,9 @@ class SPNetworkConfig {
   /// Deadline for each send plus full body read, also used for async hooks.
   final Duration timeout;
 
-  /// Retry configuration. Writes are always sent at most once.
+  /// Retry configuration. Sixplace itself retries only GET and HEAD.
+  ///
+  /// An injected custom HTTP client may implement independent replay behavior.
   final SPRetryPolicy retryPolicy;
 
   /// Evaluated at call time so newly saved tokens take effect immediately.

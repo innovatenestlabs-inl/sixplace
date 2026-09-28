@@ -1,10 +1,17 @@
 name: sixplace
-description: A mobile-first, responsive application foundation for Flutter.
-version: 0.0.4
+description: Cross-platform Flutter foundations for responsive layout, networking, feedback, themes, forms, and storage abstractions.
+version: 0.0.5
 
 homepage: https://github.com/innovatenestlabs-inl/sixplace
 repository: https://github.com/innovatenestlabs-inl/sixplace
 issue_tracker: https://github.com/innovatenestlabs-inl/sixplace/issues
+
+topics:
+  - flutter
+  - responsive
+  - networking
+  - forms
+  - design-system
 
 environment:
   sdk: ">=3.9.0 <4.0.0"
@@ -19,7 +26,7 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^5.0.0
-  test: ^1.26.3
+  flutter_lints: ^6.0.0
+  test: ^1.31.0
 
 flutter:

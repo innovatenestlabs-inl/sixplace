@@ -1,14 +1,12 @@
 # Sixplace
 
-A mobile-first, responsive application foundation for Flutter.
+Cross-platform Flutter foundations for responsive layout, networking, feedback, themes, forms, and storage abstractions.
 
 Sixplace helps Flutter developers build adaptive mobile, tablet, desktop, and web applications with minimal code while avoiding duplicated widget trees.
 
 Its responsive layout system is inspired by the simplicity of Bootstrap's 12-column grid while remaining designed specifically for Flutter.
 
-Sixplace also includes `SPNetwork`, a UI-independent HTTP foundation for API communication, authentication, retry handling, cancellation, uploads, typed errors, and backend reachability checks.
-
-> Sixplace is under active development. `SPLayout` and `SPNetwork` are currently available. Additional application foundations will be introduced gradually through carefully designed and tested APIs.
+Sixplace combines six focused foundations: responsive layout, networking, feedback, theming, forms, and storage abstractions. Each foundation is independently importable, uses Flutter/Dart-first APIs, and is designed to remain compatible across Android, iOS, Linux, macOS, web, and Windows.
 
 ---
 
@@ -67,12 +65,12 @@ Sixplace is designed around six coordinated application foundations:
 |---|---|---|
 | `SPLayout` | Responsive grids, containers, spacing, visibility, sizing and application shell | Available |
 | `SPNetwork` | HTTP requests, authentication, retry, cancellation, uploads, typed errors and reachability | Available |
-| `SPFeedback` | Toasts, alerts, loaders and messages | Planned |
-| `SPTheme` | Colours, typography, spacing and design tokens | Planned |
-| `SPForms` | Inputs, validation and submission handling | Planned |
-| `SPStorage` | Preferences, secure storage and caching abstractions | Planned |
+| `SPFeedback` | Transient messages, alerts and blocking/embedded loaders | Available |
+| `SPTheme` | Colours, typography integration, spacing, radii and design tokens | Available |
+| `SPForms` | Inputs, validation, guarded submission and submit-state UI | Available |
+| `SPStorage` | Preference/secure-store abstractions and bounded in-memory caching | Available |
 
-Only foundations marked as available should be considered part of the current public API.
+All six foundations are part of the current public API.
 
 ---
 
@@ -94,7 +92,7 @@ Or add it manually:
 
 ```yaml
 dependencies:
-  sixplace: ^0.0.4
+  sixplace: ^0.0.5
 ```
 
 For local package development:
@@ -117,10 +115,14 @@ Or import only the layout API:
 import 'package:sixplace/layout.dart';
 ```
 
-Or only networking:
+Or import a single foundation:
 
 ```dart
 import 'package:sixplace/network.dart';
+import 'package:sixplace/feedback.dart';
+import 'package:sixplace/theme.dart';
+import 'package:sixplace/forms.dart';
+import 'package:sixplace/storage.dart';
 ```
 
 ---
@@ -1580,11 +1582,329 @@ Sixplace currently does not provide:
 - Upload progress callbacks
 - Download progress callbacks
 - General interceptor chains
-- Secure token storage
+- Persistent secure token storage implementation
 - Application routing
-- Toasts or dialogs
+- Feedback inside the network layer (use `SPFeedback` separately)
 
-These responsibilities either remain with the consuming application or may be added through future focused Sixplace foundations.
+These responsibilities remain outside `SPNetwork`. Use the relevant Sixplace foundation where available, or keep application-specific policy in your app.
+
+---
+
+# SPFeedback
+
+`SPFeedback` provides framework-native messages, dialogs and loading surfaces without requiring a routing or state-management package.
+
+## Toast-like messages
+
+```dart
+SPFeedback.showToast(
+  context,
+  'Connected.',
+  type: SPFeedbackType.info,
+);
+```
+
+`showToast` uses Flutter's own `ScaffoldMessenger` rather than a platform-specific native toast, keeping behavior consistent on mobile, web and desktop. For actions or longer messages, use `showMessage`.
+
+## Transient messages
+
+```dart
+SPFeedback.showMessage(
+  context,
+  'Sale saved successfully.',
+  type: SPFeedbackType.success,
+);
+```
+
+Available semantic types are `info`, `success`, `warning`, and `error`. Messages use `ScaffoldMessenger`, so they work consistently across Flutter platforms.
+
+Actions are optional:
+
+```dart
+SPFeedback.showMessage(
+  context,
+  'Draft deleted.',
+  type: SPFeedbackType.warning,
+  actionLabel: 'Undo',
+  onAction: restoreDraft,
+);
+```
+
+## Alerts
+
+```dart
+final confirmed = await SPFeedback.showAlert(
+  context,
+  title: 'Delete invoice?',
+  message: 'This action cannot be undone.',
+  confirmLabel: 'Delete',
+  cancelLabel: 'Cancel',
+  type: SPFeedbackType.error,
+);
+
+if (confirmed == true) {
+  await deleteInvoice();
+}
+```
+
+## Blocking loader
+
+```dart
+final loader = SPFeedback.showLoading(
+  context,
+  message: 'Submitting invoice…',
+);
+
+try {
+  await submitInvoice();
+} finally {
+  loader.close();
+}
+```
+
+The loader handle removes only the route it created, avoiding accidental pops of unrelated screens. For inline workflows, use `SPBlockingLoader` directly in the widget tree.
+
+---
+
+# SPTheme
+
+`SPTheme` builds Material themes and attaches Sixplace semantic design tokens through Flutter's `ThemeExtension` mechanism.
+
+```dart
+MaterialApp(
+  theme: SPTheme.light(
+    seedColor: const Color(0xFF5B5BD6),
+  ),
+  darkTheme: SPTheme.dark(
+    seedColor: const Color(0xFF5B5BD6),
+  ),
+  home: const HomePage(),
+)
+```
+
+Read the current tokens from context:
+
+```dart
+final tokens = context.spTheme;
+
+final successColor = tokens.success;
+final pagePadding = context.spSpacing.md;
+final cardRadius = context.spRadius.lg;
+final bodySize = context.spTypography.body;
+```
+
+Customize token scales:
+
+```dart
+final theme = SPTheme.light(
+  spacing: const SPSpacingTokens(
+    xs: 4,
+    sm: 8,
+    md: 18,
+    lg: 28,
+    xl: 36,
+    xxl: 52,
+  ),
+  radius: const SPRadiusTokens(
+    sm: 6,
+    md: 12,
+    lg: 18,
+    xl: 28,
+    pill: 999,
+  ),
+  typography: const SPTypographyTokens(
+    display: 34,
+    headline: 26,
+    title: 20,
+    body: 16,
+    label: 14,
+    caption: 12,
+  ),
+);
+```
+
+To add Sixplace tokens to an existing `ThemeData` without replacing other theme configuration:
+
+```dart
+final theme = SPTheme.withTokens(existingTheme);
+```
+
+`SPTheme.light` and `SPTheme.dark` apply the configured `SPTypographyTokens` to Flutter's `TextTheme` while preserving each base style's remaining properties. Pass a complete custom `textTheme` when the application needs full typography control. `SPTheme.withTokens` preserves an existing `TextTheme` by default; set `applyTypography: true` to apply the token sizes.
+
+---
+
+# SPForms
+
+`SPForms` provides validators, common Material form inputs and guarded asynchronous submission. It does not require GetX, Bloc, Riverpod, Provider, or another state manager.
+
+## Validators
+
+```dart
+final emailValidator = SPValidators.compose<String>([
+  SPValidators.required(),
+  SPValidators.email(),
+]);
+```
+
+Other built-in validators include:
+
+- `minLength`
+- `maxLength`
+- `pattern`
+- `minNumber`
+- `maxNumber`
+- `compose`
+
+## Inputs
+
+```dart
+final formKey = GlobalKey<FormState>();
+
+Form(
+  key: formKey,
+  child: Column(
+    children: [
+      SPTextFormField(
+        label: 'Email',
+        keyboardType: TextInputType.emailAddress,
+        validator: SPValidators.compose([
+          SPValidators.required(),
+          SPValidators.email(),
+        ]),
+      ),
+      SPDropdownFormField<int>(
+        label: 'Customer type',
+        items: const [
+          DropdownMenuItem(value: 1, child: Text('Retail')),
+          DropdownMenuItem(value: 2, child: Text('Dealer')),
+        ],
+        onChanged: (value) {},
+        validator: (value) => value == null ? 'Choose a type.' : null,
+      ),
+      SPCheckboxFormField(
+        title: 'I confirm the information is correct',
+        validator: (value) => value == true ? null : 'Confirmation is required.',
+      ),
+    ],
+  ),
+)
+```
+
+## Guarded submission
+
+`SPFormController.submit` validates the form and rejects concurrent submissions, helping prevent duplicate actions caused by repeated taps.
+
+```dart
+final formController = SPFormController();
+
+Future<void> save() async {
+  await formController.submit<void>(
+    formKey: formKey,
+    context: context,
+    action: () async {
+      await SPNetwork.instance.post(
+        'customers',
+        body: buildCustomerPayload(),
+      );
+    },
+  );
+}
+```
+
+Use a submission-aware button:
+
+```dart
+SPSubmitButton(
+  controller: formController,
+  label: 'Save',
+  busyLabel: 'Saving…',
+  onPressed: save,
+)
+```
+
+Dispose controllers owned by a `State` object:
+
+```dart
+@override
+void dispose() {
+  formController.dispose();
+  super.dispose();
+}
+```
+
+For transaction safety, UI duplicate-submit protection should still be paired with backend idempotency where business operations must not be duplicated.
+
+---
+
+# SPStorage
+
+`SPStorage` defines stable storage interfaces without forcing a particular persistence or secure-storage plugin on every application. This keeps Sixplace platform-neutral and lets apps choose providers that match their deployment and security requirements.
+
+## Storage facade
+
+```dart
+final storage = SPStorage(
+  preferences: MyPreferencesAdapter(),
+  secure: MySecureStorageAdapter(),
+);
+
+await storage.writePreference('pageSize', 25);
+final pageSize = await storage.readPreference<int>('pageSize');
+
+await storage.writeSecure('accessToken', token);
+final savedToken = await storage.readSecure('accessToken');
+```
+
+Implement these interfaces around your preferred persistence packages:
+
+```dart
+abstract interface class SPPreferencesStore {
+  Future<Object?> read(String key);
+  Future<void> write(String key, Object value);
+  Future<bool> containsKey(String key);
+  Future<void> remove(String key);
+  Future<void> clear();
+}
+
+abstract interface class SPSecureStore {
+  Future<String?> read(String key);
+  Future<void> write(String key, String value);
+  Future<bool> containsKey(String key);
+  Future<void> remove(String key);
+  Future<void> clear();
+}
+```
+
+Preference values are intentionally limited to `String`, `bool`, `int`, `double`, and `List<String>` so adapters can map cleanly to common preference stores.
+
+## In-memory providers
+
+Sixplace includes:
+
+```dart
+SPMemoryPreferencesStore();
+SPMemorySecureStore();
+```
+
+These are useful for tests, previews and ephemeral sessions. `SPMemorySecureStore` does **not** provide encrypted persistent storage and should not be represented as an OS-backed secure store.
+
+## Bounded cache
+
+`SPStorageCache` is an in-process LRU-style cache with optional TTL expiration. It creates no background polling timer.
+
+```dart
+final cache = SPStorageCache(maxEntries: 200);
+
+cache.put(
+  'dashboard',
+  dashboardModel,
+  ttl: const Duration(minutes: 5),
+);
+
+final cached = cache.get<DashboardModel>('dashboard');
+```
+
+Expired values are removed lazily during cache access. When the capacity is exceeded, the least recently used entry is evicted.
 
 ---
 
@@ -2416,6 +2736,23 @@ If no inherited font size is available, Sixplace falls back to the configured ro
 | `SPCancelToken` | Request cancellation |
 | `SPUploadFile` | Multipart file model |
 | `isDeviceOnline()` | Backend reachability check |
+| `SPFeedback` | Messages, alerts and blocking loaders |
+| `SPFeedbackLoaderHandle` | Route-specific loader lifecycle |
+| `SPTheme` | Light/dark theme factories and token installation |
+| `SPThemeTokens` | Semantic colors, spacing and radius tokens |
+| `SPSpacingTokens` | Spacing design-token scale |
+| `SPRadiusTokens` | Radius design-token scale |
+| `SPTypographyTokens` | Typography design-token scale |
+| `SPValidators` | Reusable form validators |
+| `SPFormController` | Validation and guarded async submission |
+| `SPTextFormField` | Text input wrapper |
+| `SPDropdownFormField<T>` | Dropdown form input |
+| `SPCheckboxFormField` | Boolean form input |
+| `SPSubmitButton` | Submission-aware Material button |
+| `SPStorage` | Preference, secure-store and cache facade |
+| `SPPreferencesStore` | Preference persistence abstraction |
+| `SPSecureStore` | Secure string persistence abstraction |
+| `SPStorageCache` | Bounded in-memory TTL/LRU cache |
 
 ---
 
@@ -2485,6 +2822,17 @@ fvm flutter run \
 
 The networking example can use an injected mock transport and therefore does not require a real backend, API key, or production account.
 
+Run the feedback/theme/forms/storage demo:
+
+```bash
+cd example
+fvm flutter run \
+  -t lib/foundations_main.dart \
+  -d chrome
+```
+
+The storage portion uses only the included in-memory adapters, so the demo needs no platform-specific storage plugin configuration.
+
 ---
 
 # Testing
@@ -2543,12 +2891,22 @@ fvm flutter pub outdated
 fvm flutter pub publish --dry-run
 ```
 
+pub.dev calculates pub points with `pana`. Run the latest `pana` against a
+**copy** of the package because the analyzer may modify the directory it checks:
+
+```bash
+dart pub global activate pana
+dart pub global run pana <path-to-a-copy-of-sixplace>
+```
+
 Do not publish until:
 
 ```text
 format     -> pass
 analyze    -> pass
 tests      -> pass
+outdated    -> reviewed
+pana       -> target score / no unexpected findings
 dry-run    -> pass
 ```
 
@@ -2703,5 +3061,6 @@ Sixplace is available under the [MIT License](LICENSE).
 
 # Maintainer
 
-**Innovate Nest Labs**  
+**Innovate Nest Labs**
+
 Digital Solutions, Bangladesh

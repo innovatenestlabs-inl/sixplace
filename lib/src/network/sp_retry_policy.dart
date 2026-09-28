@@ -2,8 +2,9 @@ import 'dart:math' as math;
 
 /// Bounded exponential retries for GET and HEAD only.
 ///
-/// Writes are never automatically retried, even if an idempotency header is
-/// supplied. [maxAttempts] includes the initial request, not just retries.
+/// Sixplace's retry loop never retries writes, even when an idempotency header
+/// is supplied. An injected custom HTTP client may have its own replay policy.
+/// [maxAttempts] includes the initial request, not just retries.
 class SPRetryPolicy {
   /// Creates a policy. Two retries means [maxAttempts] is three.
   SPRetryPolicy({

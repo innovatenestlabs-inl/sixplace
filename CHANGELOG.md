@@ -1,4 +1,41 @@
-## 0.0.3
+## 0.0.5
+
+### Added
+
+- Added the `SPFeedback` foundation with cross-platform toast-like/transient messages,
+  alert dialogs, route-specific blocking loader handles and an embeddable loader.
+- Added the `SPTheme` foundation with light/dark theme factories, semantic color
+  tokens, spacing tokens, radius tokens, typography tokens and `BuildContext` accessors.
+- Added the `SPForms` foundation with validators, guarded form submission, text,
+  dropdown and checkbox fields, and a submission-aware button.
+- Added the `SPStorage` foundation with preference and secure-store interfaces,
+  in-memory implementations for tests/session data, and a bounded TTL/LRU cache.
+- Added focused tests for feedback, theme, forms and storage foundations.
+- Added standalone public entry points: `feedback.dart`, `theme.dart`,
+  `forms.dart`, and `storage.dart`.
+
+### Changed
+
+- `sixplace.dart` now exports all six foundations.
+- Updated the package documentation and foundation matrix so all six foundations
+  are documented as available.
+- Updated the network configuration documentation to clarify that Sixplace does
+  not retry writes, while an injected custom transport may implement its own
+  replay behavior.
+- Updated `flutter_lints` to `^6.0.0` and the test constraint to remain compatible
+  with supported and latest stable Dart/Flutter toolchains.
+- Added pub.dev topics and corrected the changelog history so the published
+  `0.0.4` release is represented by its own heading.
+
+### Platform support
+
+- The new foundations use Flutter/Dart APIs only and do not import `dart:io` or
+  `dart:html`, preserving Android, iOS, Linux, macOS, web and Windows support.
+- `SPStorage` intentionally uses injectable persistence abstractions instead of
+  imposing a platform plugin, so applications can choose the storage provider
+  appropriate for their deployment.
+
+## 0.0.4
 
 ### Added
 
@@ -15,6 +52,7 @@
 - Added credential-safe relative endpoint resolution, disabled automatic
   redirects, metadata-only opt-in logs and once-per-session 401 callbacks.
 - Added network tests and a runnable, offline network demo entry point.
+- Added `isDeviceOnline()` for one-attempt, unauthenticated backend reachability checks.
 
 ### Dependencies and compatibility
 
@@ -25,7 +63,6 @@
   capped-scaling proposal is not implemented by this network update.
 - No GetX, storage, navigation, toast, connectivity plugin or token-refresh
   implementation is imposed on consuming applications.
-- Package version remains `0.0.3` until the maintainer chooses the next release.
 
 ## 0.0.3
 

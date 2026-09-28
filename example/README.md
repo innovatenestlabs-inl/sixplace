@@ -1,17 +1,29 @@
-# example
+# Sixplace example
 
-A new Flutter project.
+This example application demonstrates the public Sixplace foundations without
+requiring production credentials or external services.
 
-## Getting Started
+## Layout and numeric sizing
 
-This project is a starting point for a Flutter application.
+```bash
+flutter run -t lib/main.dart
+```
 
-A few resources to get you started if this is your first Flutter project:
+## Networking
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+The networking demo uses an injected mock HTTP transport and does not call an
+external server.
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+```bash
+flutter run -t lib/network_main.dart
+```
+
+## Feedback, theme, forms and storage
+
+This demo combines `SPFeedback`, `SPTheme`, `SPForms` and `SPStorage`. The
+storage example intentionally uses the included in-memory adapters so no native
+plugin configuration is required.
+
+```bash
+flutter run -t lib/foundations_main.dart
+```
