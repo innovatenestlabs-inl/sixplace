@@ -2,6 +2,35 @@
 
 ### Added
 
+- Added the `SPNetwork` foundation with shared initialization and independent,
+  injectable clients. Network initialization is separate from `SixPlaceScope`.
+- Added GET, POST, PUT, PATCH, DELETE and HEAD helpers, typed model decoding,
+  JSON/text/byte responses and byte-backed multipart uploads for native and web.
+- Added runtime-validated backend configuration, query merging, header
+  overrides, dynamic bearer-token providers and an app-owned unauthorized hook.
+- Added typed `SPNetworkException` failures, response status/header access,
+  empty-response handling and preserved backend validation details.
+- Added bounded GET/HEAD retries with Retry-After support, full-response
+  per-attempt deadlines, cancellation, client shutdown and a response size limit.
+- Added credential-safe relative endpoint resolution, disabled automatic
+  redirects, metadata-only opt-in logs and once-per-session 401 callbacks.
+- Added network tests and a runnable, offline network demo entry point.
+
+### Dependencies and compatibility
+
+- Added `http` and `http_parser` runtime dependencies; application code uses
+  Sixplace's API, while these packages provide transport and HTTP parsing.
+- Added `test` as a development dependency for pure-Dart networking tests.
+- Existing layout and numeric-sizing source behavior is unchanged. The earlier
+  capped-scaling proposal is not implemented by this network update.
+- No GetX, storage, navigation, toast, connectivity plugin or token-refresh
+  implementation is imposed on consuming applications.
+- Package version remains `0.0.3` until the maintainer chooses the next release.
+
+## 0.0.3
+
+### Added
+
 - Added design-scaled numeric sizing helpers through `.w`, `.h`, `.sp`,
   `.rem`, and `.em(context)`.
 - Added shared Sixplace initialization with `SixPlace.init(context, ...)` and
