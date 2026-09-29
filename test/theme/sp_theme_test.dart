@@ -2,6 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sixplace/theme.dart';
 
+class _AppTheme extends ThemeExtension<_AppTheme> {
+  const _AppTheme();
+
+  @override
+  _AppTheme copyWith() => this;
+
+  @override
+  _AppTheme lerp(covariant _AppTheme? other, double t) => this;
+}
+
 void main() {
   test('spacing and radius tokens copy and interpolate', () {
     const a = SPSpacingTokens();
@@ -12,7 +22,12 @@ void main() {
     expect(middle.lg, 26);
 
     const typeA = SPTypographyTokens();
-    final typeB = typeA.copyWith(body: 18, title: 22, headline: 26, display: 34);
+    final typeB = typeA.copyWith(
+      body: 18,
+      title: 22,
+      headline: 26,
+      display: 34,
+    );
     expect(SPTypographyTokens.lerp(typeA, typeB, 0.5).body, 17);
 
     const radiusA = SPRadiusTokens();
@@ -45,12 +60,17 @@ void main() {
   });
 
   test('withTokens preserves unrelated theme extensions', () {
-    final base = ThemeData(colorSchemeSeed: const Color(0xFF445566));
+    const appTheme = _AppTheme();
+    final base = ThemeData(
+      colorSchemeSeed: const Color(0xFF445566),
+      extensions: const [appTheme],
+    );
     final themed = SPTheme.withTokens(
       base,
       spacing: const SPSpacingTokens(md: 20, lg: 28, xl: 36, xxl: 52),
     );
 
     expect(themed.extension<SPThemeTokens>()?.spacing.md, 20);
+    expect(themed.extension<_AppTheme>(), same(appTheme));
   });
 }

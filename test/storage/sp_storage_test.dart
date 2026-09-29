@@ -2,24 +2,27 @@ import 'package:sixplace/storage.dart';
 import 'package:test/test.dart';
 
 void main() {
-  test('memory preference store copies string lists and enforces types', () async {
-    final preferences = SPMemoryPreferencesStore();
-    final secure = SPMemorySecureStore();
-    final storage = SPStorage(preferences: preferences, secure: secure);
-    final values = <String>['one'];
+  test(
+    'memory preference store copies string lists and enforces types',
+    () async {
+      final preferences = SPMemoryPreferencesStore();
+      final secure = SPMemorySecureStore();
+      final storage = SPStorage(preferences: preferences, secure: secure);
+      final values = <String>['one'];
 
-    await storage.writePreference('items', values);
-    values.add('two');
+      await storage.writePreference('items', values);
+      values.add('two');
 
-    final stored = await storage.readPreference<List<String>>('items');
-    expect(stored, ['one']);
-    expect(() => stored!.add('three'), throwsUnsupportedError);
+      final stored = await storage.readPreference<List<String>>('items');
+      expect(stored, ['one']);
+      expect(() => stored!.add('three'), throwsUnsupportedError);
 
-    expect(
-      () => storage.writePreference('bad', <String, Object?>{'x': 1}),
-      throwsArgumentError,
-    );
-  });
+      expect(
+        () => storage.writePreference('bad', <String, Object?>{'x': 1}),
+        throwsArgumentError,
+      );
+    },
+  );
 
   test('secure memory store supports the storage facade', () async {
     final storage = SPStorage(

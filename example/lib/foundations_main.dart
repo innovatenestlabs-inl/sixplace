@@ -133,8 +133,9 @@ class _FoundationsDemoPageState extends State<FoundationsDemoPage> {
                           initialValue: _confirmed,
                           title: 'I confirm the information is correct',
                           onChanged: (value) => _confirmed = value,
-                          validator: (value) =>
-                              value == true ? null : 'Confirmation is required.',
+                          validator: (value) => value == true
+                              ? null
+                              : 'Confirmation is required.',
                         ),
                         SizedBox(height: context.spSpacing.md),
                         SPSubmitButton(

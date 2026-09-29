@@ -185,14 +185,15 @@ abstract final class SPFeedback {
         'SnackBar margin/width require SnackBarBehavior.floating.',
       );
     }
-    if (style.width != null &&
-        (!style.width!.isFinite || style.width! <= 0)) {
-      throw ArgumentError.value(style.width, 'style.width', 'Must be positive.');
+    if (style.width != null && (!style.width!.isFinite || style.width! <= 0)) {
+      throw ArgumentError.value(
+        style.width,
+        'style.width',
+        'Must be positive.',
+      );
     }
     if (style.margin != null && style.width != null) {
-      throw ArgumentError(
-        'SnackBar margin and width cannot both be supplied.',
-      );
+      throw ArgumentError('SnackBar margin and width cannot both be supplied.');
     }
     if (style.elevation != null &&
         (!style.elevation!.isFinite || style.elevation! < 0)) {
@@ -221,10 +222,7 @@ abstract final class SPFeedback {
 
     return messenger.showSnackBar(
       SnackBar(
-        content: Text(
-          message,
-          style: TextStyle(color: colors.foreground),
-        ),
+        content: Text(message, style: TextStyle(color: colors.foreground)),
         backgroundColor: colors.background,
         duration: duration,
         behavior: style.behavior,

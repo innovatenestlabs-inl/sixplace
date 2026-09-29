@@ -3,7 +3,7 @@ import 'dart:collection';
 /// Persistent preference-style key/value storage abstraction.
 ///
 /// Implementations should support the same primitive value set commonly used by
-/// preference stores: String, bool, int, double and List<String>.
+/// preference stores: `String`, `bool`, `int`, `double` and `List<String>`.
 abstract interface class SPPreferencesStore {
   /// Reads a value, or null when [key] does not exist.
   Future<Object?> read(String key);
@@ -110,10 +110,8 @@ class SPStorageCache {
   /// Creates a cache with an optional [maxEntries] bound.
   ///
   /// [clock] is primarily useful for deterministic tests.
-  SPStorageCache({
-    this.maxEntries = 100,
-    DateTime Function()? clock,
-  }) : _clock = clock ?? DateTime.now {
+  SPStorageCache({this.maxEntries = 100, DateTime Function()? clock})
+    : _clock = clock ?? DateTime.now {
     if (maxEntries < 1) {
       throw ArgumentError.value(maxEntries, 'maxEntries', 'Must be positive.');
     }
@@ -231,9 +229,7 @@ class SPStorage {
     final value = await preferences.read(key);
     if (value == null) return null;
     if (value is! T) {
-      throw StateError(
-        'Preference "$key" is ${value.runtimeType}, not $T.',
-      );
+      throw StateError('Preference "$key" is ${value.runtimeType}, not $T.');
     }
     return _copyPreferenceValue(value) as T;
   }
@@ -257,7 +253,8 @@ class SPStorage {
   Future<String?> readSecure(String key) => secure.read(key);
 
   /// Writes a secure string.
-  Future<void> writeSecure(String key, String value) => secure.write(key, value);
+  Future<void> writeSecure(String key, String value) =>
+      secure.write(key, value);
 
   /// Returns whether a secure value exists.
   Future<bool> containsSecure(String key) => secure.containsKey(key);

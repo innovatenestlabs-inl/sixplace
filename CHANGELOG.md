@@ -1,3 +1,24 @@
+## 1.0.0
+
+### First stable release
+
+- Promoted Sixplace to its first stable public release with all six foundations available: responsive layout, networking, feedback, theming, forms, and storage abstractions.
+- Kept the public foundations independently importable so applications can adopt Sixplace incrementally without changing their state-management, routing, persistence, or domain architecture.
+- Added a collapsible `AI prompt` section to `README.md` that gives AI coding assistants a structured Sixplace 1.0.0 architecture and migration context for fresh projects and existing Flutter applications.
+- Added `SPRoom`, a Room-inspired structured SQLite persistence layer under the storage foundation, powered by the sqflite ecosystem.
+- Added declarative entity schemas, typed entity adapters, generic/subclassable DAOs, single/bulk CRUD/upsert/query APIs, explicit migrations, Room-style transaction aliases, transaction-aware DAO execution, schema validation/identity checks, reactive invalidation streams, in-memory builders, and sqflite-compatible factory injection.
+- Added an SPRoom example and focused database tests covering CRUD, transactions, invalidation, migration and schema preservation.
+- Isolated SPRoom transaction contexts between database instances and validated `WITHOUT ROWID` integer primary keys, with rollback and missing-migration preservation tests.
+- Corrected theme-extension preservation and form test setup, and kept the main example compact with an offline HTTP transport.
+- Added acknowledgements thanking AndroidX Room (Kotlin/Android Room) for the Database/Entity/DAO/Migration/Transaction architecture inspiration and sqflite for the underlying SQLite ecosystem.
+
+### Package quality and compatibility
+
+- Targets Dart `>=3.9.0 <4.0.0` and Flutter `>=3.35.0`.
+- Keeps Sixplace core APIs compatible across Android, iOS, Linux, macOS, web, and Windows; SPRoom uses sqflite automatically on Android/iOS/macOS and accepts an injected sqflite-compatible factory on Linux/Windows/web.
+- Keeps runtime dependencies focused on Flutter, `http`, `http_parser`, `sqflite`, and `sqflite_common`.
+- Retains focused examples, tests, API documentation, publication checks, and `pana` guidance for pub.dev quality validation.
+
 ## 0.0.5
 
 ### Added

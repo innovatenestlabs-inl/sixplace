@@ -1,12 +1,12 @@
 # Sixplace
 
-Cross-platform Flutter foundations for responsive layout, networking, feedback, themes, forms, and storage abstractions.
+Cross-platform Flutter foundations for responsive layout, networking, feedback, themes, forms, storage abstractions, and Room-inspired SQLite persistence.
 
 Sixplace helps Flutter developers build adaptive mobile, tablet, desktop, and web applications with minimal code while avoiding duplicated widget trees.
 
 Its responsive layout system is inspired by the simplicity of Bootstrap's 12-column grid while remaining designed specifically for Flutter.
 
-Sixplace combines six focused foundations: responsive layout, networking, feedback, theming, forms, and storage abstractions. Each foundation is independently importable, uses Flutter/Dart-first APIs, and is designed to remain compatible across Android, iOS, Linux, macOS, web, and Windows.
+Sixplace combines six focused foundations: responsive layout, networking, feedback, theming, forms, and storage. The storage foundation now includes `SPRoom`, a Room-inspired structured SQLite layer powered by the sqflite ecosystem. Each foundation remains independently adoptable.
 
 ---
 
@@ -68,9 +68,897 @@ Sixplace is designed around six coordinated application foundations:
 | `SPFeedback` | Transient messages, alerts and blocking/embedded loaders | Available |
 | `SPTheme` | Colours, typography integration, spacing, radii and design tokens | Available |
 | `SPForms` | Inputs, validation, guarded submission and submit-state UI | Available |
-| `SPStorage` | Preference/secure-store abstractions and bounded in-memory caching | Available |
+| `SPStorage` | Preference/secure-store abstractions, bounded cache, and `SPRoom` structured SQLite persistence | Available |
 
-All six foundations are part of the current public API.
+All six foundations are part of the current public API. `SPRoom` belongs to the storage foundation and is also independently importable through `package:sixplace/room.dart`.
+
+<details>
+<summary><strong>AI prompt</strong> — copy this into an AI coding agent or chat assistant</summary>
+
+```text
+You are assisting a Flutter developer who is using Sixplace 1.0.0.
+
+Your job is to understand Sixplace as an application-foundation package and use it correctly when:
+- starting a new Flutter project,
+- introducing Sixplace into an existing Flutter project,
+- migrating duplicated responsive layouts to one responsive widget tree,
+- migrating direct HTTP calls to SPNetwork,
+- standardizing feedback, theme tokens, forms, and storage abstractions,
+- reviewing or refactoring code that already uses Sixplace,
+- or planning a gradual migration without forcing unrelated architectural changes.
+
+Treat the information below as the working contract for Sixplace 1.0.0. If the installed package source or current official Sixplace documentation conflicts with this prompt, the installed package/API is the source of truth. Do not invent Sixplace APIs that are not documented or present in the package.
+
+PACKAGE IDENTITY
+================
+Package: sixplace
+Stable version: 1.0.0
+Flutter package: yes
+Dart SDK constraint: >=3.9.0 <4.0.0
+Flutter constraint: >=3.35.0
+Primary platforms: Android, iOS, Linux, macOS, web, Windows
+License: MIT
+Repository: https://github.com/innovatenestlabs-inl/sixplace
+
+Runtime dependencies are intentionally small and focused:
+- flutter (SDK)
+- http
+- http_parser
+- sqflite
+- sqflite_common
+
+Sixplace is not a state-management framework and does not require GetX, Riverpod, Bloc, Provider, or another state manager. It also does not own application routing, business rules, domain models, authentication state, or a platform secure-storage plugin. For structured local relational persistence it provides the optional SPRoom layer; applications still own their entities, schema design, migrations, data-retention rules, and encryption decisions.
+
+PUBLIC IMPORTS
+==============
+Use the complete API when broad access is appropriate:
+
+import 'package:sixplace/sixplace.dart';
+
+Or import focused foundations:
+
+import 'package:sixplace/layout.dart';
+import 'package:sixplace/network.dart';
+import 'package:sixplace/feedback.dart';
+import 'package:sixplace/theme.dart';
+import 'package:sixplace/forms.dart';
+import 'package:sixplace/storage.dart';
+import 'package:sixplace/room.dart';
+
+Numeric design-scaling helpers are also available through:
+
+import 'package:sixplace/sixplace_numeric.dart';
+
+ARCHITECTURAL PRINCIPLE
+=======================
+Sixplace has six coordinated but independently adoptable foundations:
+
+1. SPLayout   - responsive layout, grid, spacing, visibility, adaptive shell
+2. SPNetwork  - UI-independent HTTP client and transport behavior
+3. SPFeedback - messages, dialogs, blocking/embedded loaders
+4. SPTheme    - Material themes and semantic design tokens
+5. SPForms    - validators, common form fields, guarded submission
+6. SPStorage  - preference/secure-store contracts, bounded cache, and SPRoom SQLite persistence
+
+A project does not need to migrate all six foundations at once. Prefer incremental adoption. Do not rewrite working business logic merely to use Sixplace.
+
+============================================================
+1. SPLAYOUT
+============================================================
+
+PURPOSE
+-------
+Use SPLayout to build mobile-first responsive Flutter interfaces without maintaining separate mobile/tablet/desktop page trees.
+
+Default breakpoints are Bootstrap-inspired:
+- xs: 0+
+- sm: 576+
+- md: 768+
+- lg: 992+
+- xl: 1200+
+- xxl: 1400+
+
+Responsive values inherit forward from smaller breakpoints until overridden.
+
+Example:
+
+SPCol(
+  sm: 6,
+  lg: 4,
+  child: content,
+)
+
+means:
+- xs: 12 columns by default
+- sm/md: 6 columns
+- lg/xl/xxl: 4 columns
+
+KEY LAYOUT TYPES
+----------------
+- SPBreakpoint
+- SPBreakpoints
+- SPResponsiveValue<T>
+- SPResponsive
+- context.sp
+- SPContainer
+- SPRow
+- SPCol
+- SPResponsiveSizedBox
+- SPPadding
+- SPMargin
+- SPVisibility
+- SPAppBar
+- SPScaffold
+
+CORE PATTERN
+------------
+Prefer one widget tree:
+
+SPRow(
+  gap: 16,
+  children: [
+    SPCol(
+      md: 6,
+      child: firstCard,
+    ),
+    SPCol(
+      md: 6,
+      child: secondCard,
+    ),
+  ],
+)
+
+Avoid creating a full MobilePage and DesktopPage when only structure or sizing changes. Use responsive spans, values, visibility, ordering, padding, and scaffold behavior instead.
+
+RESOLUTION SEMANTICS
+--------------------
+This distinction is important:
+
+Viewport-based:
+- context.sp
+- SPResponsiveValue.resolveFrom(context)
+- SPResponsiveSizedBox
+- SPPadding
+- SPMargin
+- SPVisibility
+- SPScaffold
+
+Immediate-parent-width based:
+- SPContainer
+- SPRow
+- SPCol inside SPRow
+
+This lets nested grids respond to their actual container width while screen-level decisions still use viewport width.
+
+SPResponsiveValue<T> example:
+
+const spacing = SPResponsiveValue<double>(
+  base: 8,
+  md: 16,
+  xl: 24,
+);
+
+Missing values inherit from the nearest smaller configured breakpoint.
+
+VIEWPORT INFORMATION
+--------------------
+Use:
+
+final responsive = context.sp;
+
+Common properties include:
+- width
+- height
+- breakpoint
+- isMobile (xs/sm)
+- isTablet (md)
+- isDesktop (lg+)
+- isLargeDesktop (xxl+)
+- atLeast(...)
+- below(...)
+
+APPLICATION SHELL
+-----------------
+SPScaffold can coordinate:
+- normal mobile drawer,
+- permanent desktop drawer,
+- tablet navigation rail,
+- responsive bottom navigation visibility,
+- SPAppBar.
+
+Use SPAppBar for a platform-adaptive app bar with iOS-aware presentation, automatic back handling, dark-mode-aware colors, and optional drawer action behavior.
+
+CUSTOM BREAKPOINTS
+------------------
+SPBreakpoints can be customized. Keep breakpoints strictly increasing. When migrating an existing app with established breakpoints, prefer configuring Sixplace to match the existing design system rather than arbitrarily changing layout thresholds.
+
+============================================================
+NUMERIC DESIGN SCALING (RELATED CORE API)
+============================================================
+
+Sixplace also provides numeric design-draft helpers:
+- value.w   -> width scaling
+- value.h   -> height scaling
+- value.sp  -> font scaling with system text scaling
+- value.rem -> root-font-relative scaling
+- value.em(context) -> inherited/parent-font-relative scaling
+
+These helpers require SixPlace metrics initialization.
+
+Default design size: 390 x 844
+Default root font size: 16
+
+Initialize from a valid MediaQuery context using SixPlace.init(...), or wrap the relevant subtree with SixPlaceScope.
+
+Example concept:
+
+SixPlaceScope(
+  designSize: const Size(390, 844),
+  rootFontSize: 16,
+  child: appContent,
+)
+
+Do not confuse numeric design scaling with breakpoint-responsive layout. Use breakpoints for structural decisions; use numeric scaling only where design-draft proportional sizing is genuinely desired.
+
+SPNetwork does not require SixPlace.init or SixPlaceScope.
+
+============================================================
+2. SPNETWORK
+============================================================
+
+PURPOSE
+-------
+SPNetwork is a persistent, UI-independent HTTP layer. It wraps package:http behavior while keeping storage, navigation, UI feedback, and business rules owned by the application.
+
+SHARED INITIALIZATION
+---------------------
+Initialize a shared client once, normally during application startup:
+
+SPNetwork.init(
+  config: SPNetworkConfig(
+    baseUrl: 'https://api.example.com/api/v1/',
+    timeout: const Duration(seconds: 30),
+    retryPolicy: SPRetryPolicy(maxAttempts: 3),
+  ),
+);
+
+Then reuse:
+
+final api = SPNetwork.instance;
+
+SPNetwork.init throws if called again while the shared client is still active. Closing the shared client allows future initialization.
+
+INDEPENDENT CLIENTS
+-------------------
+For multiple backends create separate clients:
+
+final reportingApi = SPNetwork(
+  config: SPNetworkConfig(
+    baseUrl: 'https://reports.example.com/api/',
+  ),
+);
+
+Reuse clients. Do not create one SPNetwork instance per request. Call close() only when the owner is permanently disposed.
+
+CONFIGURATION
+-------------
+SPNetworkConfig supports concepts including:
+- validated absolute HTTP(S) baseUrl,
+- default headers,
+- per-attempt timeout,
+- SPRetryPolicy,
+- tokenProvider,
+- onUnauthorized callback,
+- metadata-only logger,
+- maxResponseBytes.
+
+The base URL must not contain credentials, query parameters, or a fragment. Sixplace normalizes it as a directory-style base URL so relative endpoints preserve the configured path prefix.
+
+REQUEST METHODS
+---------------
+SPNetwork supports:
+- get
+- post
+- put
+- patch
+- delete
+- head
+- request
+- upload
+- isDeviceOnline
+
+JSON request bodies are encoded by Sixplace. Pass Dart JSON-compatible objects. Do not jsonEncode the request body before passing it to SPNetwork.
+
+Example:
+
+final response = await SPNetwork.instance.post<Map<String, dynamic>>(
+  'customers',
+  body: {
+    'name': 'Example Customer',
+  },
+);
+
+TYPED DECODING
+--------------
+Use a decoder when mapping a successful decoded response to a model:
+
+final response = await SPNetwork.instance.get<Customer>(
+  'customers/42',
+  decoder: (body) => Customer.fromJson(
+    body! as Map<String, dynamic>,
+  ),
+);
+
+SPNetworkResponse<T> exposes the decoded data plus statusCode, headers, bodyBytes, URI, and attempt count.
+
+PER-REQUEST OPTIONS
+-------------------
+SPRequestOptions can override:
+- headers,
+- authenticated behavior,
+- bearer token,
+- timeout,
+- retry policy,
+- response type,
+- cancellation token.
+
+SPResponseType supports JSON, text, and raw bytes.
+
+AUTHENTICATION
+--------------
+Prefer tokenProvider for current bearer-token lookup. The provider is evaluated at call time, so newly stored tokens are used without recreating the client.
+
+For public/login requests use authenticated: false. This removes Authorization handling for that request and skips the authenticated 401 callback behavior.
+
+The application owns token persistence and refresh/login policy. Sixplace does not decide where tokens are stored.
+
+UNAUTHORIZED HANDLING
+---------------------
+An authenticated 401 can trigger the configured onUnauthorized callback once for the current auth session. After a successful login, call resetUnauthorizedState() so a future authenticated 401 can trigger the callback again.
+
+The application owns navigation, session cleanup, user messaging, and re-authentication.
+
+RETRIES
+-------
+Sixplace automatically retries only GET and HEAD according to SPRetryPolicy.
+
+Writes are intentionally not automatically replayed by Sixplace:
+- POST: one attempt
+- PUT: one attempt
+- PATCH: one attempt
+- DELETE: one attempt
+- multipart write: one attempt
+
+This protects transactional operations from accidental duplicate writes.
+
+A custom injected HTTP client may have its own replay policy; if one is injected, review that transport independently.
+
+SPRetryPolicy.maxAttempts includes the first attempt. Default retryable statuses include 408, 429, 502, 503, and 504. 401 and 403 are not retry statuses.
+
+For critical write operations such as orders, payments, invoices, or POS sales, pair client-side duplicate-submit protection with backend idempotency.
+
+CANCELLATION
+------------
+Use SPCancelToken to cancel one request or multiple requests sharing the token. Cancellation is permanent; create a new token for a new operation.
+
+UPLOADS
+-------
+SPUploadFile is byte-backed and works across native and web without requiring dart:io File. Read/pick bytes in application code and pass them to SPUploadFile. Upload supports POST, PUT, and PATCH.
+
+Large streaming uploads/downloads are outside the buffered initial API. Respect maxResponseBytes when downloading files.
+
+ERRORS
+------
+Catch SPNetworkException and branch on SPNetworkErrorType rather than parsing text.
+
+Error types include:
+- http
+- authentication
+- timeout
+- connection
+- cancelled
+- decoding
+- responseTooLarge
+
+Potentially sensitive fields such as URI, headers, body, and underlying cause are available on the exception for controlled handling, but SPNetworkException.toString intentionally avoids exposing those values. Do not blindly log sensitive exception fields.
+
+REACHABILITY
+------------
+isDeviceOnline() is a backend reachability probe, not a guarantee that the backend is healthy.
+
+It performs an unauthenticated single-attempt HEAD request with no automatic retry. Any received HTTP response, including 401/404/500/503, proves the network path/server answered and therefore counts as reachable. DNS, socket, TLS/transport failure, or timeout returns false.
+
+Do not call isDeviceOnline() before every write. A preflight request introduces a race condition and extra traffic. Normally send the real request and handle its typed result.
+
+REQUEST LIFECYCLE GUIDANCE
+--------------------------
+Do not start network calls directly in build(). Cache futures where FutureBuilder is used. Reuse SPNetwork clients. Guard submit buttons. Keep token providers lightweight.
+
+============================================================
+3. SPFEEDBACK
+============================================================
+
+PURPOSE
+-------
+SPFeedback provides framework-native user feedback without requiring a router or state manager.
+
+Key APIs:
+- SPFeedback.showToast
+- SPFeedback.showMessage
+- SPFeedback.showAlert
+- SPFeedback.showLoading
+- SPBlockingLoader
+- SPFeedbackLoaderHandle
+- SPFeedbackType
+- SPFeedbackStyle
+
+Semantic feedback types:
+- info
+- success
+- warning
+- error
+
+Messages use ScaffoldMessenger, so call them from a context that has the required Flutter ancestors.
+
+Example:
+
+SPFeedback.showMessage(
+  context,
+  'Saved successfully.',
+  type: SPFeedbackType.success,
+);
+
+Alerts return a nullable bool so the caller can distinguish confirm, explicit cancel, and external dismissal.
+
+Blocking loader example:
+
+final loader = SPFeedback.showLoading(
+  context,
+  message: 'Saving...',
+);
+try {
+  await save();
+} finally {
+  loader.close();
+}
+
+The loader handle closes only the route it created. It must not be replaced with a generic Navigator.pop that could close an unrelated route.
+
+Use SPBlockingLoader when an inline/embedded loading surface is better than a modal route.
+
+============================================================
+4. SPTHEME
+============================================================
+
+PURPOSE
+-------
+SPTheme creates Material themes and installs Sixplace semantic tokens through Flutter ThemeExtension.
+
+Key APIs:
+- SPTheme.light
+- SPTheme.dark
+- SPTheme.withTokens
+- SPThemeTokens
+- SPSpacingTokens
+- SPRadiusTokens
+- SPTypographyTokens
+- context.spTheme
+- context.spSpacing
+- context.spRadius
+- context.spTypography
+
+Example:
+
+MaterialApp(
+  theme: SPTheme.light(
+    seedColor: const Color(0xFF5B5BD6),
+  ),
+  darkTheme: SPTheme.dark(
+    seedColor: const Color(0xFF5B5BD6),
+  ),
+  home: const HomePage(),
+)
+
+Use SPTheme.withTokens(existingTheme) when the app already has a carefully configured ThemeData and only Sixplace tokens should be installed. This is preferable during migration because it avoids replacing unrelated theme configuration.
+
+Tokens include semantic colors plus spacing, radius, and typography scales. Theme accessors have a ColorScheme-based fallback if tokens are not explicitly installed, but installing them intentionally is preferred for a consistent design system.
+
+============================================================
+5. SPFORMS
+============================================================
+
+PURPOSE
+-------
+SPForms provides common validators, Material form inputs, and guarded asynchronous submission. It does not impose a state-management framework.
+
+Key APIs:
+- SPValidators
+- SPFormController
+- SPTextFormField
+- SPDropdownFormField<T>
+- SPCheckboxFormField
+- SPSubmitButton
+
+Built-in validators include:
+- required
+- email
+- minLength
+- maxLength
+- pattern
+- minNumber
+- maxNumber
+- compose
+
+Typical pattern:
+
+final formKey = GlobalKey<FormState>();
+final formController = SPFormController();
+
+Future<void> save() async {
+  await formController.submit<void>(
+    formKey: formKey,
+    context: context,
+    action: () async {
+      await SPNetwork.instance.post(
+        'customers',
+        body: buildPayload(),
+      );
+    },
+  );
+}
+
+SPSubmitButton can observe the controller and prevent repeated user submission while the operation is running.
+
+Dispose SPFormController when it is owned by a State object.
+
+Guarding the UI is not a substitute for server-side idempotency on transactions that must never execute twice.
+
+============================================================
+6. SPSTORAGE + SPROOM
+============================================================
+
+PURPOSE
+-------
+SPStorage defines stable preference/secure-store interfaces without forcing a key/value or secure-storage plugin on all consumers. The same storage foundation also includes SPRoom for structured relational SQLite data.
+
+Key APIs:
+- SPPreferencesStore
+- SPSecureStore
+- SPMemoryPreferencesStore
+- SPMemorySecureStore
+- SPStorageCache
+- SPStorage
+
+Applications should adapt their chosen persistence libraries to:
+
+SPPreferencesStore
+- read
+- write
+- containsKey
+- remove
+- clear
+
+SPSecureStore
+- read
+- write
+- containsKey
+- remove
+- clear
+
+Preference values are intentionally restricted to common primitive preference types:
+- String
+- bool
+- int
+- double
+- List<String>
+
+SPMemoryPreferencesStore and SPMemorySecureStore are useful for tests, previews, and ephemeral sessions. SPMemorySecureStore is not encrypted persistent secure storage and must never be described as equivalent to an OS-backed secure store.
+
+SPStorageCache is a bounded in-process LRU-style cache with optional TTL expiration. It does not run a background polling timer. Expiration is handled lazily during cache access, and least-recently-used entries are evicted when capacity is exceeded.
+
+
+SPROOM
+------
+SPRoom is Sixplace's Room-inspired SQLite persistence layer. It is intentionally modeled after the mental model used by AndroidX Room in Kotlin projects:
+- database class / central database access point,
+- entities/tables,
+- DAOs,
+- explicit schema versions,
+- explicit migrations,
+- transactions,
+- conflict strategies,
+- typed entity adapters,
+- reactive query invalidation.
+
+SPRoom uses the sqflite ecosystem underneath. On Android, iOS, and macOS the default factory comes from package:sqflite. On Linux, Windows, and web, inject a compatible DatabaseFactory from the sqflite ecosystem (for example sqflite_common_ffi on desktop or a compatible web factory) instead of assuming the mobile plugin exists.
+
+Focused import:
+
+import 'package:sixplace/room.dart';
+
+Core SPRoom types:
+- SPRoom
+- SPRoomDatabaseBuilder<T>
+- SPRoomDatabase
+- SPRoomEntitySchema
+- SPRoomColumn
+- SPRoomIndex
+- SPRoomForeignKey
+- SPRoomEntityAdapter<T>
+- SPRoomDao<T>
+- SPRoomMigration
+- SPRoomExecutor
+- SPRoomInvalidationTracker
+- SPRoomConflictStrategy
+- SPRoomTypeConverter<T, D>
+
+Typical architecture:
+
+class AppDatabase extends SPRoomDatabase {
+  late final UserDao users = UserDao(this);
+}
+
+class UserDao extends SPRoomDao<User> {
+  UserDao(SPRoomDatabase database) : super(database, UserAdapter());
+}
+
+final db = await SPRoom.databaseBuilder<AppDatabase>(
+  name: 'app.db',
+  version: 1,
+  create: AppDatabase.new,
+  entities: const [userSchema],
+).build();
+
+Entity schemas are explicit rather than annotation-generated. Flutter/Dart does not provide Kotlin KSP semantics at runtime, so do NOT invent @Entity/@Dao annotations or claim compile-time SQL verification exists. SPRoom aims for Room-like runtime behavior and architecture while keeping the Dart API explicit, tree-shakeable, and predictable.
+
+Entity adapter responsibilities:
+- schema: declares the table schema,
+- toRow(entity): maps a Dart model to SQLite-compatible values,
+- fromRow(row): maps a database row back to the Dart model,
+- primaryKeyOf(entity): defaults to reading declared PK fields from toRow and can be overridden.
+
+SPRoomDao provides:
+- insert / insertAll,
+- upsert / upsertAll using SQLite ON CONFLICT DO UPDATE,
+- update / updateAll,
+- delete / deleteAll / deleteWhere,
+- getAll / query,
+- findById / findByPrimaryKey,
+- count,
+- typed rawQuery,
+- rawWrite with invalidation,
+- watch / watchRawQuery reactive streams.
+
+Transaction rule:
+
+await db.withTransaction(() async {
+  await db.users.insert(user);
+  await db.audit.insert(entry);
+});
+
+DAO calls inside `writeTransaction`, `withTransaction`, or `runInTransaction` automatically reuse the active sqflite transaction. Do not manually use the outer database connection from inside a transaction callback.
+
+Migrations are explicit:
+
+SPRoomMigration(1, 2, (db) async {
+  await db.execute('ALTER TABLE users ADD COLUMN nickname TEXT');
+});
+
+Register them through addMigrations(...). If a path is missing, opening fails by default. fallbackToDestructiveMigration() is opt-in because it destroys managed data.
+
+Schema validation is enabled by default. SPRoom checks managed table structure and explicit indexes after creation/migration/open and keeps a schema identity marker. A schema change must therefore be paired with a version bump and migration. Do not silently edit the schema while keeping the same version.
+
+Reactive queries:
+
+final stream = db.users.watch(orderBy: 'name');
+
+Writes made through SPRoomDao invalidate the relevant table automatically. If custom SQL writes bypass a DAO, use db.rawWrite(...) or db.notifyTablesChanged(...) so watchers refresh. Writes from completely separate SQLite connections cannot be automatically observed by this in-process tracker.
+
+Security and durability:
+- SPRoom is SQLite persistence, not encrypted storage.
+- Do not store secrets merely because the database is local.
+- Use an encryption strategy appropriate to the application when at-rest confidentiality is required.
+- Keep migrations tested with production-like data.
+- Prefer one long-lived database instance per app process, matching Room/sqflite guidance.
+- Close databases intentionally in tests/tools; normal app lifecycles usually keep the singleton open.
+
+Do not claim SPRoom is the AndroidX Room implementation. It is an independent Dart/Flutter API inspired by Room's architecture and powered by sqflite. Room's compile-time KSP query verification and generated DAO implementations are not reproduced by Sixplace 1.0.0.
+
+SECURITY BOUNDARIES
+===================
+Do not claim Sixplace provides security properties it does not own.
+
+Sixplace does NOT automatically provide:
+- encrypted persistent storage,
+- OAuth/OIDC implementation,
+- token refresh flows,
+- certificate pinning,
+- application authorization rules,
+- database encryption,
+- route guards,
+- backend idempotency,
+- connectivity guarantees,
+- automatic safe replay of write requests.
+
+Use SPStorage abstractions with an appropriate secure-storage adapter where secrets must persist. Keep authentication and authorization decisions in application/backend code.
+
+NEW PROJECT GUIDANCE
+====================
+When starting a fresh Flutter project with Sixplace:
+
+1. Add sixplace to pubspec.
+2. Choose focused imports or package:sixplace/sixplace.dart.
+3. Establish the app ThemeData using SPTheme or install tokens into the existing theme.
+4. Decide whether numeric design scaling is actually needed; if yes, initialize SixPlace metrics from a MediaQuery context.
+5. Build pages mobile-first with SPContainer, SPRow, SPCol, SPResponsiveValue, and SPScaffold.
+6. Initialize SPNetwork once per backend, with application-owned token/session callbacks.
+7. Use SPForms for common input/submit patterns where helpful.
+8. Use SPFeedback for user-facing transient messages, alerts, and loaders.
+9. Provide real persistence adapters to SPStorage when key/value data must survive restarts; use memory stores only where ephemeral behavior is intended.
+10. Use SPRoom when the app needs structured relational SQLite data, and define versioned migrations before shipping schema changes.
+11. Keep business/domain logic independent from presentation helpers.
+
+EXISTING PROJECT MIGRATION GUIDANCE
+===================================
+When migrating an existing app, first audit before editing:
+
+A. Responsive UI
+- Find duplicated mobile/tablet/desktop widget trees.
+- Identify existing breakpoints and parent-width constraints.
+- Migrate page sections incrementally to SPRow/SPCol/SPResponsiveValue.
+- Preserve state, controllers, and business logic while replacing only layout duplication.
+- Use custom SPBreakpoints if the existing product already has established thresholds.
+
+B. Networking
+- Inventory direct http calls and any current client wrapper/interceptors.
+- Identify token lookup, 401 handling, retry behavior, timeout behavior, multipart behavior, logging, and response decoding.
+- Do not blindly replace a mature networking layer. Map each existing behavior to SPNetwork and keep app-specific requirements outside the package.
+- Never introduce automatic replay of writes during migration.
+- Use independent SPNetwork clients for genuinely different backends/origins.
+
+C. Theme
+- Preserve existing ThemeData and install Sixplace tokens with SPTheme.withTokens when a full theme replacement is unnecessary.
+
+D. Forms
+- Replace repeated validator/submit boilerplate where it improves consistency, without rewriting domain validation that belongs elsewhere.
+
+E. Storage
+- Wrap existing SharedPreferences/secure-storage implementations with Sixplace interfaces rather than replacing proven key/value persistence mechanisms solely for package conformity.
+- If an existing app already uses SQLite/sqflite, migrate incrementally: model the existing tables with SPRoomEntitySchema, create adapters/DAOs around the current schema, keep the existing database version, then add explicit SPRoomMigration steps for future changes. Never drop or recreate production tables simply to adopt SPRoom.
+
+F. Feedback
+- Migrate messages/dialogs/loaders where consistent cross-platform Flutter-native behavior is desired. Preserve app-specific navigation and error policy.
+
+MIGRATION SAFETY RULES
+======================
+- Do not change business behavior just to reduce line count.
+- Do not introduce duplicate widget trees when responsive primitives can solve the layout.
+- Do not start API calls in build().
+- Do not create an SPNetwork client per request.
+- Do not pre-jsonEncode request bodies for SPNetwork JSON calls.
+- Do not automatically retry transactional writes.
+- Do not treat isDeviceOnline() as proof that the backend is healthy.
+- Do not log tokens, authorization headers, private bodies, or sensitive exception details.
+- Do not represent SPMemorySecureStore as encrypted persistent storage.
+- Do not force all six foundations into a project if only some solve a real problem.
+- Prefer small, reviewable migration steps with tests after each step.
+
+TESTING EXPECTATIONS
+====================
+When modifying a project that uses Sixplace:
+- preserve existing tests,
+- add tests for changed responsive behavior,
+- test network success and typed failures,
+- test guarded submission for transactional UI,
+- test custom storage adapters,
+- verify mobile/tablet/desktop breakpoints,
+- verify web behavior when network or file-upload code changes.
+
+For the Sixplace package itself, expected validation includes:
+- dart format with no changes required,
+- flutter analyze with no issues,
+- flutter test passing,
+- dependency freshness reviewed,
+- pub publish dry-run with no unexpected files/warnings,
+- pana review before a public release.
+
+HOW TO ANSWER THE DEVELOPER
+===========================
+When the developer asks for help:
+
+1. Identify whether the task belongs to layout, network, feedback, theme, forms, storage, numeric scaling, or application-specific code.
+2. Prefer the narrowest Sixplace foundation that solves the problem.
+3. Explain what Sixplace owns and what the consuming app must still own.
+4. Produce compile-oriented Flutter/Dart examples using real Sixplace 1.0.0 APIs only.
+5. For migration requests, first describe the current-to-target mapping and compatibility risks, then provide the implementation steps/code.
+6. For architecture requests, preserve existing state management unless the developer explicitly asks to change it.
+7. For network writes, prioritize duplicate-write safety and backend idempotency.
+8. For responsive work, prefer one mobile-first widget tree and use parent-width vs viewport-width semantics correctly.
+9. If the request depends on an API not described here, inspect the installed Sixplace source/docs before proposing code; do not guess method names.
+10. If Sixplace is not the right layer for a requirement, say so and keep that responsibility in the application or backend.
+
+REFERENCE EXAMPLE: RESPONSIVE PAGE
+==================================
+
+SPContainer.fluid(
+  responsivePadding: const SPResponsiveValue<EdgeInsetsGeometry>(
+    base: EdgeInsets.all(8),
+    md: EdgeInsets.all(12),
+    lg: EdgeInsets.all(16),
+  ),
+  child: SPRow(
+    responsiveGap: const SPResponsiveValue<double>(
+      base: 8,
+      lg: 16,
+    ),
+    children: [
+      SPCol(
+        span: 12,
+        lg: 8,
+        child: mainContent,
+      ),
+      SPCol(
+        span: 12,
+        lg: 4,
+        child: sideContent,
+      ),
+    ],
+  ),
+)
+
+REFERENCE EXAMPLE: NETWORK + FORM + FEEDBACK
+============================================
+
+final formController = SPFormController();
+
+Future<void> submit(BuildContext context) async {
+  try {
+    final saved = await formController.submit<bool>(
+      formKey: formKey,
+      context: context,
+      action: () async {
+        await SPNetwork.instance.post<Map<String, dynamic>>(
+          'orders',
+          body: buildOrderPayload(),
+        );
+        return true;
+      },
+    );
+
+    if (saved == true && context.mounted) {
+      SPFeedback.showMessage(
+        context,
+        'Order saved.',
+        type: SPFeedbackType.success,
+      );
+    }
+  } on SPNetworkException catch (error) {
+    if (context.mounted) {
+      SPFeedback.showMessage(
+        context,
+        'Unable to save the order (${error.type.name}).',
+        type: SPFeedbackType.error,
+      );
+    }
+  }
+}
+
+FINAL MENTAL MODEL
+==================
+Sixplace should reduce repeated application plumbing while leaving application ownership clear:
+
+- SPLayout structures responsive UI.
+- SPNetwork transports requests safely and predictably.
+- SPFeedback presents framework-native feedback.
+- SPTheme provides consistent Material themes and tokens.
+- SPForms reduces repeated validation/submission boilerplate.
+- SPStorage supplies persistence contracts and a bounded cache.
+- SPRoom supplies Room-inspired SQLite entities, DAOs, migrations, transactions, and reactive invalidation within the storage foundation.
+
+Use Sixplace as a foundation, not as a replacement for domain architecture.
+```
+
+</details>
 
 ---
 
@@ -92,7 +980,7 @@ Or add it manually:
 
 ```yaml
 dependencies:
-  sixplace: ^0.0.5
+  sixplace: ^1.0.0
 ```
 
 For local package development:
@@ -123,6 +1011,7 @@ import 'package:sixplace/feedback.dart';
 import 'package:sixplace/theme.dart';
 import 'package:sixplace/forms.dart';
 import 'package:sixplace/storage.dart';
+import 'package:sixplace/room.dart';
 ```
 
 ---
@@ -1908,6 +2797,191 @@ Expired values are removed lazily during cache access. When the capacity is exce
 
 ---
 
+# SPRoom
+
+`SPRoom` is Sixplace's Room-inspired SQLite layer for structured local data. It follows the familiar **Database → Entity → DAO → Migration → Transaction** model used by AndroidX Room while using the sqflite ecosystem underneath.
+
+`SPRoom` is part of Sixplace's storage foundation, but it has a focused import:
+
+```dart
+import 'package:sixplace/room.dart';
+```
+
+## What SPRoom provides
+
+- Declarative table schemas through `SPRoomEntitySchema`
+- Typed model mapping through `SPRoomEntityAdapter<T>`
+- Generic/subclassable `SPRoomDao<T>` CRUD APIs
+- `insert`, `insertAll`, `update`, `delete`, `upsert`, query and count helpers
+- Composite and auto-increment primary keys
+- Explicit indexes and foreign keys
+- Explicit versioned migrations
+- Missing-migration failure by default
+- Opt-in destructive migration fallback
+- Schema validation after create/migrate/open
+- Schema identity tracking
+- Transaction-aware DAO calls
+- Reactive `watch()` and `watchRawQuery()` streams
+- Raw SQL escape hatches with explicit invalidation
+- In-memory database builders for tests
+- sqflite-compatible factory injection for desktop/web/testing
+
+## Entity + adapter
+
+```dart
+class User {
+  const User({this.id, required this.name});
+
+  final int? id;
+  final String name;
+}
+
+const userSchema = SPRoomEntitySchema(
+  tableName: 'users',
+  columns: <SPRoomColumn>[
+    SPRoomColumn(
+      name: 'id',
+      type: SPRoomSqlType.integer,
+      primaryKey: true,
+      autoIncrement: true,
+    ),
+    SPRoomColumn(name: 'name', type: SPRoomSqlType.text),
+  ],
+  indices: <SPRoomIndex>[
+    SPRoomIndex(name: 'idx_users_name', columns: <String>['name']),
+  ],
+);
+
+class UserAdapter extends SPRoomEntityAdapter<User> {
+  @override
+  SPRoomEntitySchema get schema => userSchema;
+
+  @override
+  Map<String, Object?> toRow(User user) => <String, Object?>{
+    'id': user.id,
+    'name': user.name,
+  };
+
+  @override
+  User fromRow(Map<String, Object?> row) => User(
+    id: (row['id'] as num?)?.toInt(),
+    name: row['name']! as String,
+  );
+}
+```
+
+## DAO + database
+
+```dart
+class UserDao extends SPRoomDao<User> {
+  UserDao(SPRoomDatabase database) : super(database, UserAdapter());
+
+  Future<List<User>> findByName(String text) => query(
+    where: 'name LIKE ?',
+    whereArgs: <Object?>['%$text%'],
+    orderBy: 'name',
+  );
+}
+
+class AppDatabase extends SPRoomDatabase {
+  late final UserDao users = UserDao(this);
+}
+```
+
+Open it once and reuse the instance:
+
+```dart
+final db = await SPRoom.databaseBuilder<AppDatabase>(
+  name: 'app.db',
+  version: 1,
+  create: AppDatabase.new,
+  entities: const <SPRoomEntitySchema>[userSchema],
+).build();
+
+final id = await db.users.insert(const User(name: 'Mehedi'));
+final user = await db.users.findById(id);
+```
+
+## Reactive queries
+
+```dart
+final users = db.users.watch(orderBy: 'name');
+
+StreamBuilder<List<User>>(
+  stream: users,
+  builder: (context, snapshot) {
+    // rebuilds after writes performed through SPRoom
+    return const SizedBox.shrink();
+  },
+);
+```
+
+`SPRoomDao` writes automatically invalidate their table. For custom SQL writes, use `db.rawWrite(...)` or call `db.notifyTablesChanged(...)` after the write.
+
+## Transactions
+
+```dart
+await db.writeTransaction(() async {
+  await db.users.insert(firstUser);
+  await db.users.insert(secondUser);
+});
+```
+
+DAO operations automatically reuse the active sqflite transaction. `withTransaction()` and `runInTransaction()` are aliases for the same transaction behavior. This prevents the common sqflite deadlock mistake of using the outer `Database` object from inside a transaction callback.
+
+## Migrations
+
+```dart
+final migration1To2 = SPRoomMigration(1, 2, (db) async {
+  await db.execute(
+    'ALTER TABLE users ADD COLUMN email TEXT',
+  );
+});
+
+final db = await SPRoom.databaseBuilder<AppDatabase>(
+  name: 'app.db',
+  version: 2,
+  create: AppDatabase.new,
+  entities: const <SPRoomEntitySchema>[userSchemaV2],
+).addMigrations(<SPRoomMigration>[
+  migration1To2,
+]).build();
+```
+
+If a migration path is missing, SPRoom throws `SPRoomMissingMigrationException`. `fallbackToDestructiveMigration()` is intentionally opt-in because it deletes managed data.
+
+## Platform database factories
+
+Android, iOS, and macOS use `package:sqflite` automatically.
+
+For Linux/Windows unit tests or desktop applications, add a compatible sqflite factory such as `sqflite_common_ffi` in the consuming app and inject it:
+
+```dart
+sqfliteFfiInit();
+
+final db = await SPRoom.databaseBuilder<AppDatabase>(
+  name: 'app.db',
+  version: 1,
+  create: AppDatabase.new,
+  entities: const <SPRoomEntitySchema>[userSchema],
+  factory: databaseFactoryFfi,
+).build();
+```
+
+For web, inject a compatible sqflite web factory and complete that factory's required web/wasm setup. Sixplace intentionally does not force desktop/web SQLite binaries into every consuming application.
+
+pub.dev's automatic platform detection can omit Windows and Linux because the
+default factory imports the mobile/macOS `sqflite` plugin. Desktop SPRoom usage
+requires an injected factory; its database tests run with `sqflite_common_ffi`.
+The layout, networking, feedback, theme, forms and key/value storage entrypoints
+do not require a native SQLite factory.
+
+## Important parity note
+
+SPRoom deliberately adopts the **architecture and runtime behavior patterns** developers know from AndroidX Room, but it is not a port of AndroidX Room and does not claim Kotlin/KSP compile-time code generation. Sixplace 1.0.0 uses explicit Dart schemas/adapters instead of fake annotations or runtime mirrors. SQL inside custom DAO methods is therefore the application's responsibility to test.
+
+---
+
 # SPLayout
 
 The `SPLayout` foundation provides mobile-first responsive UI primitives for Flutter.
@@ -2753,6 +3827,13 @@ If no inherited font size is available, Sixplace falls back to the configured ro
 | `SPPreferencesStore` | Preference persistence abstraction |
 | `SPSecureStore` | Secure string persistence abstraction |
 | `SPStorageCache` | Bounded in-memory TTL/LRU cache |
+| `SPRoom` | Room-inspired SQLite database builder |
+| `SPRoomDatabase` | Base database lifecycle and transaction owner |
+| `SPRoomEntitySchema` | Declarative SQLite table schema |
+| `SPRoomEntityAdapter<T>` | Typed entity/row mapper |
+| `SPRoomDao<T>` | CRUD, query, upsert and reactive DAO base |
+| `SPRoomMigration` | Explicit schema-version migration |
+| `SPRoomInvalidationTracker` | Reactive table-change stream |
 
 ---
 
@@ -2833,6 +3914,15 @@ fvm flutter run \
 
 The storage portion uses only the included in-memory adapters, so the demo needs no platform-specific storage plugin configuration.
 
+Run the dedicated SPRoom example on Android, iOS, or macOS (where sqflite is automatic):
+
+```bash
+cd example
+fvm flutter run -t lib/room_main.dart -d <device>
+```
+
+For Linux/Windows/web, inject a compatible sqflite database factory as described in the SPRoom platform section.
+
 ---
 
 # Testing
@@ -2851,6 +3941,8 @@ Network-only tests:
 ```bash
 fvm flutter test test/network
 ```
+
+SPRoom tests use a sqflite-compatible FFI factory and cover CRUD, transactions, reactive invalidation, and migration/schema validation.
 
 The networking tests should cover areas including:
 
@@ -2880,7 +3972,14 @@ The networking tests should cover areas including:
 
 # Before Publishing to pub.dev
 
-Run the complete validation sequence:
+pub.dev's scoring model evolves over time, so do not optimize for a hard-coded
+point total. Validate the categories pub.dev currently evaluates: package file
+conventions and secure metadata URLs, API/example documentation, detected
+platform support (including modern web/Wasm readiness where applicable), static
+analysis, and compatibility with current SDKs/dependencies.
+
+For the `1.0.0` release, run the complete validation sequence from the package
+root:
 
 ```bash
 fvm flutter pub get
@@ -2888,32 +3987,40 @@ fvm dart format --set-exit-if-changed .
 fvm flutter analyze
 fvm flutter test
 fvm flutter pub outdated
-fvm flutter pub publish --dry-run
+fvm dart pub publish --dry-run
 ```
+
+Carefully review the dry-run file list. A library package should not accidentally
+publish local build output, editor caches, credentials, generated temporary
+files, or other development-only artifacts.
 
 pub.dev calculates pub points with `pana`. Run the latest `pana` against a
 **copy** of the package because the analyzer may modify the directory it checks:
 
 ```bash
-dart pub global activate pana
-dart pub global run pana <path-to-a-copy-of-sixplace>
+fvm dart pub global activate pana
+fvm dart pub global run pana <path-to-a-copy-of-sixplace>
 ```
 
-Do not publish until:
+Before publishing, verify all of these release gates:
 
 ```text
-format     -> pass
-analyze    -> pass
-tests      -> pass
-outdated    -> reviewed
-pana       -> target score / no unexpected findings
-dry-run    -> pass
+version     -> pubspec.yaml and CHANGELOG.md agree on 1.0.0
+format      -> pass with no generated diff
+analyze     -> no errors, warnings, or unexpected lints
+tests       -> all pass
+outdated    -> reviewed; supported dependency constraints are current
+platforms   -> verify Sixplace core remains Android/iOS/Linux/macOS/web/Windows compatible; verify SPRoom default/injected factory notes are accurate
+docs        -> README example + public API documentation remain available
+metadata    -> LICENSE present; homepage/repository/issue URLs use valid HTTPS
+pana        -> no unexpected pub-point findings
+dry-run     -> no warnings and only intended publish files
 ```
 
-Then publish:
+Only after those checks pass, publish the immutable `1.0.0` release:
 
 ```bash
-fvm flutter pub publish
+fvm dart pub publish
 ```
 
 ---
@@ -2952,7 +4059,7 @@ Networking is also independently importable:
 import 'package:sixplace/network.dart';
 ```
 
-Existing layout-only applications do not need to initialize `SPNetwork`.
+Existing layout-only applications do not need to initialize `SPNetwork` or `SPRoom`. Existing sqflite applications can adopt SPRoom incrementally by modeling the current schema first and introducing explicit migrations only for future schema versions.
 
 ---
 
@@ -2974,6 +4081,8 @@ Sixplace follows these principles:
 12. No automatic replay of transactional writes by Sixplace
 13. Separation of transport, application state and business logic
 14. Reduced cognitive complexity instead of line-count optimization
+15. Versioned, explicit relational schema evolution for SPRoom
+16. No destructive database migration unless the application opts in
 
 ---
 
@@ -3040,6 +4149,19 @@ Pull requests should be evaluated for:
 - Alignment with the Sixplace architecture
 
 By contributing, you agree that your contribution may be distributed under the project's MIT License.
+
+---
+
+# Acknowledgements
+
+`SPRoom` is an independent Sixplace implementation inspired by the architecture and developer experience of **AndroidX Room (Kotlin/Android Room)**. Special thanks to the Room team and Kotlin/Android Room ecosystem for the clear Database / Entity / DAO / Migration / Transaction model that informed SPRoom's design.
+
+SPRoom is powered by the **sqflite ecosystem** for SQLite access in Flutter/Dart. Special thanks to the sqflite maintainers and contributors for the stable database API, transaction support, version-management hooks, and cross-platform factory ecosystem that make this layer possible.
+
+- AndroidX Room: https://developer.android.com/training/data-storage/room
+- sqflite: https://pub.dev/packages/sqflite
+
+Sixplace is not affiliated with, sponsored by, or endorsed by Google/AndroidX or the sqflite maintainers.
 
 ---
 

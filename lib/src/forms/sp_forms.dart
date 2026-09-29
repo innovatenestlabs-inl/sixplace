@@ -9,7 +9,8 @@ abstract final class SPValidators {
   /// Requires a non-empty string after trimming whitespace.
   static SPFormValidator<String> required([
     String message = 'This field is required.',
-  ]) => (value) => value == null || value.trim().isEmpty ? message : null;
+  ]) =>
+      (value) => value == null || value.trim().isEmpty ? message : null;
 
   /// Validates an email-like value while allowing an empty optional field.
   static SPFormValidator<String> email([
@@ -22,10 +23,7 @@ abstract final class SPValidators {
   };
 
   /// Requires at least [length] characters when the field is non-empty.
-  static SPFormValidator<String> minLength(
-    int length, [
-    String? message,
-  ]) {
+  static SPFormValidator<String> minLength(int length, [String? message]) {
     if (length < 0) {
       throw ArgumentError.value(length, 'length', 'Must not be negative.');
     }
@@ -37,10 +35,7 @@ abstract final class SPValidators {
   }
 
   /// Limits a non-empty value to [length] characters.
-  static SPFormValidator<String> maxLength(
-    int length, [
-    String? message,
-  ]) {
+  static SPFormValidator<String> maxLength(int length, [String? message]) {
     if (length < 0) {
       throw ArgumentError.value(length, 'length', 'Must not be negative.');
     }
@@ -96,7 +91,9 @@ abstract final class SPValidators {
   };
 
   /// Runs validators in order and returns the first validation message.
-  static SPFormValidator<T> compose<T>(Iterable<SPFormValidator<T>> validators) {
+  static SPFormValidator<T> compose<T>(
+    Iterable<SPFormValidator<T>> validators,
+  ) {
     final saved = List<SPFormValidator<T>>.unmodifiable(validators);
     return (value) {
       for (final validator in saved) {
@@ -424,17 +421,13 @@ class SPCheckboxFormField extends FormField<bool> {
     required String title,
     String? subtitle,
     ValueChanged<bool>? onChanged,
-    FormFieldValidator<bool>? validator,
-    FormFieldSetter<bool>? onSaved,
-    bool enabled = true,
-    AutovalidateMode? autovalidateMode,
+    super.validator,
+    super.onSaved,
+    super.enabled = true,
+    super.autovalidateMode,
     ListTileControlAffinity controlAffinity = ListTileControlAffinity.leading,
   }) : super(
          initialValue: initialValue,
-         validator: validator,
-         onSaved: onSaved,
-         autovalidateMode: autovalidateMode,
-         enabled: enabled,
          builder: (state) => Column(
            crossAxisAlignment: CrossAxisAlignment.start,
            children: [
@@ -522,10 +515,7 @@ class SPSubmitButton extends StatelessWidget {
         ],
       );
 
-      return FilledButton(
-        onPressed: busy ? null : onPressed,
-        child: child,
-      );
+      return FilledButton(onPressed: busy ? null : onPressed, child: child);
     },
   );
 }

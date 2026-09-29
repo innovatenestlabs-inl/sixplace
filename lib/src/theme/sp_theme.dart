@@ -54,18 +54,15 @@ class SPSpacingTokens {
   );
 
   /// Linearly interpolates between two spacing scales.
-  static SPSpacingTokens lerp(
-    SPSpacingTokens a,
-    SPSpacingTokens b,
-    double t,
-  ) => SPSpacingTokens(
-    xs: _lerpDouble(a.xs, b.xs, t),
-    sm: _lerpDouble(a.sm, b.sm, t),
-    md: _lerpDouble(a.md, b.md, t),
-    lg: _lerpDouble(a.lg, b.lg, t),
-    xl: _lerpDouble(a.xl, b.xl, t),
-    xxl: _lerpDouble(a.xxl, b.xxl, t),
-  );
+  static SPSpacingTokens lerp(SPSpacingTokens a, SPSpacingTokens b, double t) =>
+      SPSpacingTokens(
+        xs: _lerpDouble(a.xs, b.xs, t),
+        sm: _lerpDouble(a.sm, b.sm, t),
+        md: _lerpDouble(a.md, b.md, t),
+        lg: _lerpDouble(a.lg, b.lg, t),
+        xl: _lerpDouble(a.xl, b.xl, t),
+        xxl: _lerpDouble(a.xxl, b.xxl, t),
+      );
 }
 
 /// Border-radius scale used by Sixplace components.
@@ -115,17 +112,14 @@ class SPRadiusTokens {
   );
 
   /// Linearly interpolates between two radius scales.
-  static SPRadiusTokens lerp(
-    SPRadiusTokens a,
-    SPRadiusTokens b,
-    double t,
-  ) => SPRadiusTokens(
-    sm: _lerpDouble(a.sm, b.sm, t),
-    md: _lerpDouble(a.md, b.md, t),
-    lg: _lerpDouble(a.lg, b.lg, t),
-    xl: _lerpDouble(a.xl, b.xl, t),
-    pill: _lerpDouble(a.pill, b.pill, t),
-  );
+  static SPRadiusTokens lerp(SPRadiusTokens a, SPRadiusTokens b, double t) =>
+      SPRadiusTokens(
+        sm: _lerpDouble(a.sm, b.sm, t),
+        md: _lerpDouble(a.md, b.md, t),
+        lg: _lerpDouble(a.lg, b.lg, t),
+        xl: _lerpDouble(a.xl, b.xl, t),
+        pill: _lerpDouble(a.pill, b.pill, t),
+      );
 }
 
 /// Typography size tokens that can be applied to a Flutter [TextTheme].
@@ -395,14 +389,15 @@ abstract final class SPTheme {
           radius: radius,
           typography: typography,
         );
+    final extensions = base.extensions.values
+        .where((value) => value is! SPThemeTokens)
+        .toList();
+    extensions.add(resolved);
     return base.copyWith(
       textTheme: applyTypography
           ? resolved.typography.apply(base.textTheme)
           : null,
-      extensions: <ThemeExtension<dynamic>>[
-        ...base.extensions.values.where((value) => value is! SPThemeTokens),
-        resolved,
-      ],
+      extensions: extensions,
     );
   }
 }

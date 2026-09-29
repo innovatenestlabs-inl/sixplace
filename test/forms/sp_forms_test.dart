@@ -29,9 +29,11 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
-        home: Form(
-          key: key,
-          child: const SPTextFormField(initialValue: 'valid'),
+        home: Material(
+          child: Form(
+            key: key,
+            child: const SPTextFormField(initialValue: 'valid'),
+          ),
         ),
       ),
     );
@@ -100,7 +102,10 @@ void main() {
 
     expect(key.currentState?.validate(), isFalse);
 
-    await tester.enterText(find.byType(TextFormField).first, 'user@example.com');
+    await tester.enterText(
+      find.byType(TextFormField).first,
+      'user@example.com',
+    );
     await tester.tap(find.byType(DropdownButtonFormField<int>));
     await tester.pumpAndSettle();
     await tester.tap(find.text('One').last);
