@@ -1,3 +1,90 @@
+## 1.0.0
+
+### First stable release
+
+- Promoted Sixplace to its first stable public release with all six foundations available: responsive layout, networking, feedback, theming, forms, and storage abstractions.
+- Kept the public foundations independently importable so applications can adopt Sixplace incrementally without changing their state-management, routing, persistence, or domain architecture.
+- Added a collapsible `AI prompt` section to `README.md` that gives AI coding assistants a structured Sixplace 1.0.0 architecture and migration context for fresh projects and existing Flutter applications.
+- Added `SPRoom`, a Room-inspired structured SQLite persistence layer under the storage foundation, powered by the sqflite ecosystem.
+- Added declarative entity schemas, typed entity adapters, generic/subclassable DAOs, single/bulk CRUD/upsert/query APIs, explicit migrations, Room-style transaction aliases, transaction-aware DAO execution, schema validation/identity checks, reactive invalidation streams, in-memory builders, and sqflite-compatible factory injection.
+- Added an SPRoom example and focused database tests covering CRUD, transactions, invalidation, migration and schema preservation.
+- Isolated SPRoom transaction contexts between database instances and validated `WITHOUT ROWID` integer primary keys, with rollback and missing-migration preservation tests.
+- Corrected theme-extension preservation and form test setup, and kept the main example compact with an offline HTTP transport.
+- Added acknowledgements thanking AndroidX Room (Kotlin/Android Room) for the Database/Entity/DAO/Migration/Transaction architecture inspiration and sqflite for the underlying SQLite ecosystem.
+
+### Package quality and compatibility
+
+- Targets Dart `>=3.9.0 <4.0.0` and Flutter `>=3.35.0`.
+- Keeps Sixplace core APIs compatible across Android, iOS, Linux, macOS, web, and Windows; SPRoom uses sqflite automatically on Android/iOS/macOS and accepts an injected sqflite-compatible factory on Linux/Windows/web.
+- Keeps runtime dependencies focused on Flutter, `http`, `http_parser`, `sqflite`, and `sqflite_common`.
+- Retains focused examples, tests, API documentation, publication checks, and `pana` guidance for pub.dev quality validation.
+
+## 0.0.5
+
+### Added
+
+- Added the `SPFeedback` foundation with cross-platform toast-like/transient messages,
+  alert dialogs, route-specific blocking loader handles and an embeddable loader.
+- Added the `SPTheme` foundation with light/dark theme factories, semantic color
+  tokens, spacing tokens, radius tokens, typography tokens and `BuildContext` accessors.
+- Added the `SPForms` foundation with validators, guarded form submission, text,
+  dropdown and checkbox fields, and a submission-aware button.
+- Added the `SPStorage` foundation with preference and secure-store interfaces,
+  in-memory implementations for tests/session data, and a bounded TTL/LRU cache.
+- Added focused tests for feedback, theme, forms and storage foundations.
+- Added standalone public entry points: `feedback.dart`, `theme.dart`,
+  `forms.dart`, and `storage.dart`.
+
+### Changed
+
+- `sixplace.dart` now exports all six foundations.
+- Updated the package documentation and foundation matrix so all six foundations
+  are documented as available.
+- Updated the network configuration documentation to clarify that Sixplace does
+  not retry writes, while an injected custom transport may implement its own
+  replay behavior.
+- Updated `flutter_lints` to `^6.0.0` and the test constraint to remain compatible
+  with supported and latest stable Dart/Flutter toolchains.
+- Added pub.dev topics and corrected the changelog history so the published
+  `0.0.4` release is represented by its own heading.
+
+### Platform support
+
+- The new foundations use Flutter/Dart APIs only and do not import `dart:io` or
+  `dart:html`, preserving Android, iOS, Linux, macOS, web and Windows support.
+- `SPStorage` intentionally uses injectable persistence abstractions instead of
+  imposing a platform plugin, so applications can choose the storage provider
+  appropriate for their deployment.
+
+## 0.0.4
+
+### Added
+
+- Added the `SPNetwork` foundation with shared initialization and independent,
+  injectable clients. Network initialization is separate from `SixPlaceScope`.
+- Added GET, POST, PUT, PATCH, DELETE and HEAD helpers, typed model decoding,
+  JSON/text/byte responses and byte-backed multipart uploads for native and web.
+- Added runtime-validated backend configuration, query merging, header
+  overrides, dynamic bearer-token providers and an app-owned unauthorized hook.
+- Added typed `SPNetworkException` failures, response status/header access,
+  empty-response handling and preserved backend validation details.
+- Added bounded GET/HEAD retries with Retry-After support, full-response
+  per-attempt deadlines, cancellation, client shutdown and a response size limit.
+- Added credential-safe relative endpoint resolution, disabled automatic
+  redirects, metadata-only opt-in logs and once-per-session 401 callbacks.
+- Added network tests and a runnable, offline network demo entry point.
+- Added `isDeviceOnline()` for one-attempt, unauthenticated backend reachability checks.
+
+### Dependencies and compatibility
+
+- Added `http` and `http_parser` runtime dependencies; application code uses
+  Sixplace's API, while these packages provide transport and HTTP parsing.
+- Added `test` as a development dependency for pure-Dart networking tests.
+- Existing layout and numeric-sizing source behavior is unchanged. The earlier
+  capped-scaling proposal is not implemented by this network update.
+- No GetX, storage, navigation, toast, connectivity plugin or token-refresh
+  implementation is imposed on consuming applications.
+
 ## 0.0.3
 
 ### Added
