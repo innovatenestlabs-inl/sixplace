@@ -17,6 +17,7 @@ class SPDeviceSnapshot {
     required this.platform,
     required this.deviceId,
     required this.deviceIdSource,
+    this.installationId,
     required this.model,
     required this.name,
     required this.manufacturer,
@@ -33,6 +34,8 @@ class SPDeviceSnapshot {
   final String platform;
   final String? deviceId;
   final String? deviceIdSource;
+  /// Persisted app/browser-registration UUID, not a physical device ID.
+  final String? installationId;
   final String? model;
   final String? name;
   final String? manufacturer;
@@ -56,6 +59,7 @@ class SPDeviceSnapshot {
     'platform': platform,
     'deviceId': deviceId,
     'deviceIdSource': deviceIdSource,
+    'installationId': installationId,
     'model': model,
     'name': name,
     'manufacturer': manufacturer,
@@ -168,6 +172,12 @@ class SPDeviceInfo {
         ? version['release']?.toString()
         : read('systemVersion') ?? read('osRelease') ?? read('osVersion');
     final deviceId = await getDeviceId();
+    String? installationId;
+    try {
+      installationId = await getRegistrationId();
+    } catch (_) {
+      // Optional snapshot still works when browser storage is unavailable.
+    }
     final results = await Future.wait<Object?>([
       getLocalIpAddresses(),
       getBatteryLevel(),
@@ -176,6 +186,7 @@ class SPDeviceInfo {
     return SPDeviceSnapshot(
       platform: platform,
       deviceId: deviceId,
+      installationId: installationId,
       deviceIdSource: deviceId == null ? null :
           platform == 'android' ? 'android_id' : platform == 'iOS' ? 'identifier_for_vendor' : platform == 'windows' ? 'windows_device_id' : platform == 'macOS' ? 'macos_system_guid' : platform == 'linux' ? 'linux_machine_id' : null,
       model: model,
