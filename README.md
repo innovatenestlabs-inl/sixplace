@@ -57,6 +57,34 @@ The same layout automatically becomes:
 
 ---
 
+## Device registration: one API on every platform
+
+Use `await SPDeviceInfo.getRegistrationId()` for registration across Android,
+iOS, Windows, macOS, Linux and web. It creates a random UUID once and saves it
+to application preferences (browser-origin storage on web). It returns the same
+ID across normal restarts until that storage is cleared.
+
+`SPDeviceInfo.getDeviceId()` is **optional OS-specific metadata**, not the
+recommended registration key. Android ANDROID_ID, Apple vendor ID and desktop
+machine IDs have different reset scopes. Browsers return null for OS ID.
+`SPDeviceInfo.getInfo()` provides both `deviceId` and `installationId`
+plus other configuration details.
+
+```dart
+final registrationId = await SPDeviceInfo.getRegistrationId();
+final info = await SPDeviceInfo.getInfo();
+print(registrationId);
+print(info.deviceId);       // OS-specific, null on web
+print(info.installationId); // Registration UUID, if storage is accessible
+```
+
+If browser/app storage is unavailable, `getRegistrationId()` throws instead
+of returning an unpersisted value. Registration UUIDs can reset on uninstall,
+data clearing, private-browser sessions or changes of browser profile/origin.
+Never use this UUID as an authentication secret or assume it is a permanent
+physical-device identifier. No manual Android manifest / iOS plist change is
+needed for this identifier.
+
 ## SPDeviceInfo — Device configuration (no app permission edits)
 
 Import `package:sixplace/device_info.dart` (also exported by `sixplace.dart`).
