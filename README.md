@@ -141,7 +141,7 @@ All six foundations are part of the current public API. `SPRoom` belongs to the 
 <summary><strong>AI prompt</strong> — copy this into an AI coding agent or chat assistant</summary>
 
 ```text
-You are assisting a Flutter developer who is using Sixplace 1.0.0.
+You are assisting a Flutter developer who is using Sixplace 1.0.1.
 
 DEVICE REGISTRATION GUIDANCE (development branch):
 For application/device registration across Android, iOS, Windows, macOS, Linux and web, always prefer await SPDeviceInfo.getRegistrationId(). This creates one persisted app-installation UUID and works on web. SPDeviceInfo.getDeviceId() is optional OS-provided metadata, not the registration identity; web returns null for OS ID. SPDeviceInfo.getInfo() exposes both deviceId and installationId. Clearing storage or reinstalling may rotate the registration ID. Registration IDs are not authentication credentials. Do not confuse these distinct APIs.
@@ -156,12 +156,12 @@ Your job is to understand Sixplace as an application-foundation package and use 
 - reviewing or refactoring code that already uses Sixplace,
 - or planning a gradual migration without forcing unrelated architectural changes.
 
-Treat the information below as the working contract for Sixplace 1.0.0. If the installed package source or current official Sixplace documentation conflicts with this prompt, the installed package/API is the source of truth. Do not invent Sixplace APIs that are not documented or present in the package.
+Treat the information below as the working contract for Sixplace 1.0.1. If the installed package source or current official Sixplace documentation conflicts with this prompt, the installed package/API is the source of truth. Do not invent Sixplace APIs that are not documented or present in the package.
 
 PACKAGE IDENTITY
 ================
 Package: sixplace
-Stable version: 1.0.0
+Stable version: 1.0.1
 Flutter package: yes
 Dart SDK constraint: >=3.9.0 <4.0.0
 Flutter constraint: >=3.35.0
@@ -831,7 +831,7 @@ Security and durability:
 - Prefer one long-lived database instance per app process, matching Room/sqflite guidance.
 - Close databases intentionally in tests/tools; normal app lifecycles usually keep the singleton open.
 
-Do not claim SPRoom is the AndroidX Room implementation. It is an independent Dart/Flutter API inspired by Room's architecture and powered by sqflite. Room's compile-time KSP query verification and generated DAO implementations are not reproduced by Sixplace 1.0.0.
+Do not claim SPRoom is the AndroidX Room implementation. It is an independent Dart/Flutter API inspired by Room's architecture and powered by sqflite. Room's compile-time KSP query verification and generated DAO implementations are not reproduced by Sixplace 1.0.1.
 
 SECURITY BOUNDARIES
 ===================
@@ -938,7 +938,7 @@ When the developer asks for help:
 1. Identify whether the task belongs to layout, network, feedback, theme, forms, storage, numeric scaling, or application-specific code.
 2. Prefer the narrowest Sixplace foundation that solves the problem.
 3. Explain what Sixplace owns and what the consuming app must still own.
-4. Produce compile-oriented Flutter/Dart examples using real Sixplace 1.0.0 APIs only.
+4. Produce compile-oriented Flutter/Dart examples using real Sixplace 1.0.1 APIs only.
 5. For migration requests, first describe the current-to-target mapping and compatibility risks, then provide the implementation steps/code.
 6. For architecture requests, preserve existing state management unless the developer explicitly asks to change it.
 7. For network writes, prioritize duplicate-write safety and backend idempotency.
@@ -3047,7 +3047,7 @@ do not require a native SQLite factory.
 
 ## Important parity note
 
-SPRoom deliberately adopts the **architecture and runtime behavior patterns** developers know from AndroidX Room, but it is not a port of AndroidX Room and does not claim Kotlin/KSP compile-time code generation. Sixplace 1.0.0 uses explicit Dart schemas/adapters instead of fake annotations or runtime mirrors. SQL inside custom DAO methods is therefore the application's responsibility to test.
+SPRoom deliberately adopts the **architecture and runtime behavior patterns** developers know from AndroidX Room, but it is not a port of AndroidX Room and does not claim Kotlin/KSP compile-time code generation. Sixplace 1.0.1 uses explicit Dart schemas/adapters instead of fake annotations or runtime mirrors. SQL inside custom DAO methods is therefore the application's responsibility to test.
 
 ---
 
