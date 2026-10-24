@@ -2,6 +2,8 @@ import 'package:android_id/android_id.dart';
 import 'package:battery_plus/battery_plus.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:uuid/uuid.dart';
 
 import 'sp_local_ip.dart';
 
@@ -16,6 +18,7 @@ class SPDeviceSnapshot {
     required this.platform,
     required this.deviceId,
     required this.deviceIdSource,
+    this.installationId,
     required this.model,
     required this.name,
     required this.manufacturer,
@@ -32,6 +35,8 @@ class SPDeviceSnapshot {
   final String platform;
   final String? deviceId;
   final String? deviceIdSource;
+  final String? installationId;
+  String? get bestAvailableId => deviceId ?? installationId;
   final String? model;
   final String? name;
   final String? manufacturer;
@@ -55,6 +60,8 @@ class SPDeviceSnapshot {
     'platform': platform,
     'deviceId': deviceId,
     'deviceIdSource': deviceIdSource,
+    'installationId': installationId,
+    'bestAvailableId': bestAvailableId,
     'model': model,
     'name': name,
     'manufacturer': manufacturer,
