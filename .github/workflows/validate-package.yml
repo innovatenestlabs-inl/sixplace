@@ -18,14 +18,17 @@ jobs:
           cache: true
       - name: Install dependencies
         run: flutter pub get --no-example
+      - name: Resolve example dependencies
+        run: flutter pub get
+        working-directory: example
       - name: Check format
         run: dart format --output=none --set-exit-if-changed lib test
       - name: Analyze
         run: flutter analyze
       - name: Run tests
         run: flutter test
+      - name: Build Android example
+        run: flutter build apk --debug
+        working-directory: example
       - name: Publish dry run
         run: flutter pub publish --dry-run
-      - name: Resolve example dependencies
-        run: flutter pub get
-        working-directory: example
