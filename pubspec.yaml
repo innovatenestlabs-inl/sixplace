@@ -1,6 +1,6 @@
 name: sixplace
 description: Cross-platform Flutter foundations for responsive layout, networking, feedback, themes, forms, storage, and Room-inspired SQLite persistence.
-version: 1.0.0
+version: 1.0.1
 
 homepage: https://github.com/innovatenestlabs-inl/sixplace
 repository: https://github.com/innovatenestlabs-inl/sixplace
