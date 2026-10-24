@@ -21,11 +21,17 @@ class SPInstallationIdentity {
   ///
   /// Throws if storage cannot persist the value. Never silently generates
   /// a disposable identifier because that would break registered devices.
-  static Future<String> getRegistrationId() =>
-      _pending ??= _readOrCreate().catchError((Object error, StackTrace stack) {
-        _pending = null;
-        Error.throwWithStackTrace(error, stack);
-      });
+  static Future<String> getRegistrationId() {
+    final pending = _pending;
+    if (pending != null) return pending;
+
+    late final Future<String> request;
+    request = _readOrCreate().whenComplete(() {
+      if (identical(_pending, request)) _pending = null;
+    });
+    _pending = request;
+    return request;
+  }
 
   static Future<String> _readOrCreate() async {
     final preferences = SharedPreferencesAsync();

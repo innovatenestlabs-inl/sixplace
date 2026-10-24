@@ -34,6 +34,7 @@ class SPDeviceSnapshot {
   final String platform;
   final String? deviceId;
   final String? deviceIdSource;
+
   /// Persisted app/browser-registration UUID, not a physical device ID.
   final String? installationId;
   final String? model;
@@ -43,12 +44,16 @@ class SPDeviceSnapshot {
   final String? osName;
   final String? osVersion;
   final bool? isPhysicalDevice;
+
   /// Locally assigned IPs, not the internet-facing public address.
   final List<String> localIpAddresses;
+
   /// Battery percentage from 0 to 100; null if not available.
   final int? batteryLevel;
+
   /// e.g. charging, discharging, full, unknown; null if unavailable.
   final String? batteryState;
+
   /// Additional OS-provided metadata. Do not transmit without user consent.
   final Map<String, Object?> properties;
 
@@ -187,8 +192,19 @@ class SPDeviceInfo {
       platform: platform,
       deviceId: deviceId,
       installationId: installationId,
-      deviceIdSource: deviceId == null ? null :
-          platform == 'android' ? 'android_id' : platform == 'iOS' ? 'identifier_for_vendor' : platform == 'windows' ? 'windows_device_id' : platform == 'macOS' ? 'macos_system_guid' : platform == 'linux' ? 'linux_machine_id' : null,
+      deviceIdSource: deviceId == null
+          ? null
+          : platform == 'android'
+          ? 'android_id'
+          : platform == 'iOS'
+          ? 'identifier_for_vendor'
+          : platform == 'windows'
+          ? 'windows_device_id'
+          : platform == 'macOS'
+          ? 'macos_system_guid'
+          : platform == 'linux'
+          ? 'linux_machine_id'
+          : null,
       model: model,
       name: name,
       manufacturer: read('manufacturer'),
@@ -196,7 +212,8 @@ class SPDeviceInfo {
       osName: read('systemName') ?? platform,
       osVersion: osVersion,
       isPhysicalDevice: data['isPhysicalDevice'] is bool
-          ? data['isPhysicalDevice'] as bool : null,
+          ? data['isPhysicalDevice'] as bool
+          : null,
       localIpAddresses: List<String>.unmodifiable(results[0] as List<String>),
       batteryLevel: results[1] as int?,
       batteryState: results[2] as String?,

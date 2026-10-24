@@ -91,7 +91,7 @@ Import `package:sixplace/device_info.dart` (also exported by `sixplace.dart`).
 
 ```dart
 final snapshot = await SPDeviceInfo.getInfo();
-print(snapshot.deviceId);         // Android ANDROID_ID or iOS identifierForVendor
+print(snapshot.deviceId);         // OS-provided ID where available; null on web
 print(snapshot.model);            // Device model
 print(snapshot.name);             // OS-provided device name, when available
 print(snapshot.osVersion);        // OS version, when available
@@ -143,9 +143,8 @@ All six foundations are part of the current public API. `SPRoom` belongs to the 
 ```text
 You are assisting a Flutter developer who is using Sixplace 1.0.1.
 
-DEVICE REGISTRATION GUIDANCE (development branch):
+DEVICE REGISTRATION GUIDANCE:
 For application/device registration across Android, iOS, Windows, macOS, Linux and web, always prefer await SPDeviceInfo.getRegistrationId(). This creates one persisted app-installation UUID and works on web. SPDeviceInfo.getDeviceId() is optional OS-provided metadata, not the registration identity; web returns null for OS ID. SPDeviceInfo.getInfo() exposes both deviceId and installationId. Clearing storage or reinstalling may rotate the registration ID. Registration IDs are not authentication credentials. Do not confuse these distinct APIs.
-
 
 Your job is to understand Sixplace as an application-foundation package and use it correctly when:
 - starting a new Flutter project,
@@ -171,6 +170,11 @@ Repository: https://github.com/innovatenestlabs-inl/sixplace
 
 Runtime dependencies are intentionally small and focused:
 - flutter (SDK)
+- android_id
+- battery_plus
+- device_info_plus
+- shared_preferences
+- uuid
 - http
 - http_parser
 - sqflite
@@ -188,6 +192,7 @@ Or import focused foundations:
 
 import 'package:sixplace/layout.dart';
 import 'package:sixplace/network.dart';
+import 'package:sixplace/device_info.dart';
 import 'package:sixplace/feedback.dart';
 import 'package:sixplace/theme.dart';
 import 'package:sixplace/forms.dart';
@@ -197,6 +202,23 @@ import 'package:sixplace/room.dart';
 Numeric design-scaling helpers are also available through:
 
 import 'package:sixplace/sixplace_numeric.dart';
+
+DEVICE INFORMATION AND REGISTRATION
+===================================
+Import package:sixplace/device_info.dart or use package:sixplace/sixplace.dart.
+Use await SPDeviceInfo.getRegistrationId() as the persisted registration UUID
+on Android, iOS, Windows, macOS, Linux and web. This method propagates storage
+errors rather than returning an unpersisted replacement ID. Calls made
+concurrently share the same pending initialization.
+
+SPDeviceInfo.getDeviceId() is separate, nullable OS-provided metadata. Android
+uses ANDROID_ID, iOS uses identifierForVendor, and Windows/macOS/Linux use
+platform machine identifiers where available. Web always returns null for
+deviceId and does not claim an accessible physical hardware identifier.
+SPDeviceInfo.getInfo() returns a snapshot with separate deviceId and
+installationId, plus available model/name/manufacturer/OS, battery and local
+IP fields. Unsupported fields remain null or empty. No manifest or Info.plist
+changes are required. These identifiers are not authentication credentials.
 
 ARCHITECTURAL PRINCIPLE
 =======================
