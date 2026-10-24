@@ -93,18 +93,25 @@ class SPDeviceInfo {
   static final Battery _battery = Battery();
 
   static Future<String?> getDeviceId() async {
+    if (kIsWeb) return null;
     try {
-      if (defaultTargetPlatform == TargetPlatform.android && !kIsWeb) {
-        return const AndroidId().getId();
+      switch (defaultTargetPlatform) {
+        case TargetPlatform.android:
+          return const AndroidId().getId();
+        case TargetPlatform.iOS:
+          return (await _device.iosInfo).identifierForVendor;
+        case TargetPlatform.windows:
+          return (await _device.windowsInfo).deviceId;
+        case TargetPlatform.macOS:
+          return (await _device.macOsInfo).systemGUID;
+        case TargetPlatform.linux:
+          return (await _device.linuxInfo).machineId;
+        case TargetPlatform.fuchsia:
+          return null;
       }
-      if (defaultTargetPlatform == TargetPlatform.iOS && !kIsWeb) {
-        final info = await _device.iosInfo;
-        return info.identifierForVendor;
-      }
-    } catch (e) {
-      debugPrint('SPDeviceInfo: device identifier unavailable: ${e.runtimeType}');
+    } catch (_) {
+      return null;
     }
-    return null;
   }
 
   static Future<int?> getBatteryLevel() async {
