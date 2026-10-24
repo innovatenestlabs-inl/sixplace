@@ -2,8 +2,6 @@ import 'package:android_id/android_id.dart';
 import 'package:battery_plus/battery_plus.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/foundation.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:uuid/uuid.dart';
 
 import 'sp_local_ip.dart';
 
@@ -178,7 +176,7 @@ class SPDeviceInfo {
       platform: platform,
       deviceId: deviceId,
       deviceIdSource: deviceId == null ? null :
-          platform == 'android' ? 'android_id' : 'identifier_for_vendor',
+          platform == 'android' ? 'android_id' : platform == 'iOS' ? 'identifier_for_vendor' : platform == 'windows' ? 'windows_device_id' : platform == 'macOS' ? 'macos_system_guid' : platform == 'linux' ? 'linux_machine_id' : null,
       model: model,
       name: name,
       manufacturer: read('manufacturer'),
