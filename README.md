@@ -57,6 +57,71 @@ The same layout automatically becomes:
 
 ---
 
+## Device registration: one API on every platform
+
+Use `await SPDeviceInfo.getRegistrationId()` for registration across Android,
+iOS, Windows, macOS, Linux and web. It creates a random UUID once and saves it
+to application preferences (browser-origin storage on web). It returns the same
+ID across normal restarts until that storage is cleared.
+
+`SPDeviceInfo.getDeviceId()` is **optional OS-specific metadata**, not the
+recommended registration key. Android ANDROID_ID, Apple vendor ID and desktop
+machine IDs have different reset scopes. Browsers return null for OS ID.
+`SPDeviceInfo.getInfo()` provides both `deviceId` and `installationId`
+plus other configuration details.
+
+```dart
+final registrationId = await SPDeviceInfo.getRegistrationId();
+final info = await SPDeviceInfo.getInfo();
+print(registrationId);
+print(info.deviceId);       // OS-specific, null on web
+print(info.installationId); // Registration UUID, if storage is accessible
+```
+
+If browser/app storage is unavailable, `getRegistrationId()` throws instead
+of returning an unpersisted value. Registration UUIDs can reset on uninstall,
+data clearing, private-browser sessions or changes of browser profile/origin.
+Never use this UUID as an authentication secret or assume it is a permanent
+physical-device identifier. No manual Android manifest / iOS plist change is
+needed for this identifier.
+
+## SPDeviceInfo — Device configuration (no app permission edits)
+
+Import `package:sixplace/device_info.dart` (also exported by `sixplace.dart`).
+
+```dart
+final snapshot = await SPDeviceInfo.getInfo();
+print(snapshot.deviceId);         // OS-provided ID where available; null on web
+print(snapshot.model);            // Device model
+print(snapshot.name);             // OS-provided device name, when available
+print(snapshot.osVersion);        // OS version, when available
+print(snapshot.localIpAddresses); // Interface IPv4 addresses (not public IP)
+print(snapshot.batteryLevel);     // 0..100 or null
+print(snapshot.batteryState);     // charging/discharging/full/etc.
+print(snapshot.toMap());          // Additional device metadata
+```
+
+Individual live getters: `getDeviceId()`, `getBatteryLevel()`,
+`getBatteryState()`, `getLocalIpAddress()`, `getLocalIpAddresses()`.
+
+**Identifier semantics:** Android's `Settings.Secure.ANDROID_ID` (not
+`Build.ID`) is normally a hexadecimal identifier, scoped on Android 8+
+to the **device + Android user + app signing key**, and may change after a
+factory reset/signing-key change. iOS uses `identifierForVendor`, which
+can reset after all apps from the vendor are removed. Windows, macOS and
+Linux return OS machine identifiers where supported; web returns null.
+A permanent universally unique hardware ID, IMEI, MAC, public IP or serial
+number is not available to arbitrary apps without restrictions.
+
+All values are best effort; `null` indicates an unsupported or
+unavailable field. No app manifest or Info.plist modifications or runtime
+permission prompts are required for this API. On web, local IP addresses
+are intentionally unavailable. No remote public-IP lookup is performed.
+Never use these identifiers as credentials, and consider user privacy when
+sending device details to a server.
+
+---
+
 # Sixplace Foundations
 
 Sixplace is designed around six coordinated application foundations:
@@ -76,7 +141,10 @@ All six foundations are part of the current public API. `SPRoom` belongs to the 
 <summary><strong>AI prompt</strong> — copy this into an AI coding agent or chat assistant</summary>
 
 ```text
-You are assisting a Flutter developer who is using Sixplace 1.0.0.
+You are assisting a Flutter developer who is using Sixplace 1.0.1.
+
+DEVICE REGISTRATION GUIDANCE:
+For application/device registration across Android, iOS, Windows, macOS, Linux and web, always prefer await SPDeviceInfo.getRegistrationId(). This creates one persisted app-installation UUID and works on web. SPDeviceInfo.getDeviceId() is optional OS-provided metadata, not the registration identity; web returns null for OS ID. SPDeviceInfo.getInfo() exposes both deviceId and installationId. Clearing storage or reinstalling may rotate the registration ID. Registration IDs are not authentication credentials. Do not confuse these distinct APIs.
 
 Your job is to understand Sixplace as an application-foundation package and use it correctly when:
 - starting a new Flutter project,
@@ -87,12 +155,12 @@ Your job is to understand Sixplace as an application-foundation package and use 
 - reviewing or refactoring code that already uses Sixplace,
 - or planning a gradual migration without forcing unrelated architectural changes.
 
-Treat the information below as the working contract for Sixplace 1.0.0. If the installed package source or current official Sixplace documentation conflicts with this prompt, the installed package/API is the source of truth. Do not invent Sixplace APIs that are not documented or present in the package.
+Treat the information below as the working contract for Sixplace 1.0.1. If the installed package source or current official Sixplace documentation conflicts with this prompt, the installed package/API is the source of truth. Do not invent Sixplace APIs that are not documented or present in the package.
 
 PACKAGE IDENTITY
 ================
 Package: sixplace
-Stable version: 1.0.0
+Stable version: 1.0.1
 Flutter package: yes
 Dart SDK constraint: >=3.9.0 <4.0.0
 Flutter constraint: >=3.35.0
@@ -102,6 +170,11 @@ Repository: https://github.com/innovatenestlabs-inl/sixplace
 
 Runtime dependencies are intentionally small and focused:
 - flutter (SDK)
+- android_id
+- battery_plus
+- device_info_plus
+- shared_preferences
+- uuid
 - http
 - http_parser
 - sqflite
@@ -119,6 +192,7 @@ Or import focused foundations:
 
 import 'package:sixplace/layout.dart';
 import 'package:sixplace/network.dart';
+import 'package:sixplace/device_info.dart';
 import 'package:sixplace/feedback.dart';
 import 'package:sixplace/theme.dart';
 import 'package:sixplace/forms.dart';
@@ -128,6 +202,23 @@ import 'package:sixplace/room.dart';
 Numeric design-scaling helpers are also available through:
 
 import 'package:sixplace/sixplace_numeric.dart';
+
+DEVICE INFORMATION AND REGISTRATION
+===================================
+Import package:sixplace/device_info.dart or use package:sixplace/sixplace.dart.
+Use await SPDeviceInfo.getRegistrationId() as the persisted registration UUID
+on Android, iOS, Windows, macOS, Linux and web. This method propagates storage
+errors rather than returning an unpersisted replacement ID. Calls made
+concurrently share the same pending initialization.
+
+SPDeviceInfo.getDeviceId() is separate, nullable OS-provided metadata. Android
+uses ANDROID_ID, iOS uses identifierForVendor, and Windows/macOS/Linux use
+platform machine identifiers where available. Web always returns null for
+deviceId and does not claim an accessible physical hardware identifier.
+SPDeviceInfo.getInfo() returns a snapshot with separate deviceId and
+installationId, plus available model/name/manufacturer/OS, battery and local
+IP fields. Unsupported fields remain null or empty. No manifest or Info.plist
+changes are required. These identifiers are not authentication credentials.
 
 ARCHITECTURAL PRINCIPLE
 =======================
@@ -762,7 +853,7 @@ Security and durability:
 - Prefer one long-lived database instance per app process, matching Room/sqflite guidance.
 - Close databases intentionally in tests/tools; normal app lifecycles usually keep the singleton open.
 
-Do not claim SPRoom is the AndroidX Room implementation. It is an independent Dart/Flutter API inspired by Room's architecture and powered by sqflite. Room's compile-time KSP query verification and generated DAO implementations are not reproduced by Sixplace 1.0.0.
+Do not claim SPRoom is the AndroidX Room implementation. It is an independent Dart/Flutter API inspired by Room's architecture and powered by sqflite. Room's compile-time KSP query verification and generated DAO implementations are not reproduced by Sixplace 1.0.1.
 
 SECURITY BOUNDARIES
 ===================
@@ -869,7 +960,7 @@ When the developer asks for help:
 1. Identify whether the task belongs to layout, network, feedback, theme, forms, storage, numeric scaling, or application-specific code.
 2. Prefer the narrowest Sixplace foundation that solves the problem.
 3. Explain what Sixplace owns and what the consuming app must still own.
-4. Produce compile-oriented Flutter/Dart examples using real Sixplace 1.0.0 APIs only.
+4. Produce compile-oriented Flutter/Dart examples using real Sixplace 1.0.1 APIs only.
 5. For migration requests, first describe the current-to-target mapping and compatibility risks, then provide the implementation steps/code.
 6. For architecture requests, preserve existing state management unless the developer explicitly asks to change it.
 7. For network writes, prioritize duplicate-write safety and backend idempotency.
@@ -2978,7 +3069,7 @@ do not require a native SQLite factory.
 
 ## Important parity note
 
-SPRoom deliberately adopts the **architecture and runtime behavior patterns** developers know from AndroidX Room, but it is not a port of AndroidX Room and does not claim Kotlin/KSP compile-time code generation. Sixplace 1.0.0 uses explicit Dart schemas/adapters instead of fake annotations or runtime mirrors. SQL inside custom DAO methods is therefore the application's responsibility to test.
+SPRoom deliberately adopts the **architecture and runtime behavior patterns** developers know from AndroidX Room, but it is not a port of AndroidX Room and does not claim Kotlin/KSP compile-time code generation. Sixplace 1.0.1 uses explicit Dart schemas/adapters instead of fake annotations or runtime mirrors. SQL inside custom DAO methods is therefore the application's responsibility to test.
 
 ---
 

@@ -1,6 +1,7 @@
 /// Complete Sixplace public API.
 library;
 
+export 'device_info.dart';
 export 'feedback.dart';
 export 'forms.dart';
 export 'layout.dart';
