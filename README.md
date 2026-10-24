@@ -57,6 +57,43 @@ The same layout automatically becomes:
 
 ---
 
+## SPDeviceInfo — Device configuration (no app permission edits)
+
+Import `package:sixplace/device_info.dart` (also exported by `sixplace.dart`).
+
+```dart
+final snapshot = await SPDeviceInfo.getInfo();
+print(snapshot.deviceId);         // Android ANDROID_ID or iOS identifierForVendor
+print(snapshot.model);            // Device model
+print(snapshot.name);             // OS-provided device name, when available
+print(snapshot.osVersion);        // OS version, when available
+print(snapshot.localIpAddresses); // Interface IPv4 addresses (not public IP)
+print(snapshot.batteryLevel);     // 0..100 or null
+print(snapshot.batteryState);     // charging/discharging/full/etc.
+print(snapshot.toMap());          // Additional device metadata
+```
+
+Individual live getters: `getDeviceId()`, `getBatteryLevel()`,
+`getBatteryState()`, `getLocalIpAddress()`, `getLocalIpAddresses()`.
+
+**Identifier semantics:** Android's `Settings.Secure.ANDROID_ID` (not
+`Build.ID`) is normally a hexadecimal identifier, scoped on Android 8+
+to the **device + Android user + app signing key**, and may change after a
+factory reset/signing-key change. iOS uses `identifierForVendor`, which
+can reset after all apps from the vendor are removed. Web and desktop
+return null for `deviceId` rather than pretending to supply a hardware ID.
+A permanent universally unique hardware ID, IMEI, MAC, public IP or serial
+number is not available to arbitrary apps without restrictions.
+
+All values are best effort; `null` indicates an unsupported or
+unavailable field. No app manifest or Info.plist modifications or runtime
+permission prompts are required for this API. On web, local IP addresses
+are intentionally unavailable. No remote public-IP lookup is performed.
+Never use these identifiers as credentials, and consider user privacy when
+sending device details to a server.
+
+---
+
 # Sixplace Foundations
 
 Sixplace is designed around six coordinated application foundations:

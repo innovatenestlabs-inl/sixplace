@@ -1,3 +1,8 @@
+## Unreleased
+
+- Added permission-free `SPDeviceInfo` device snapshot/helper with Android ANDROID_ID, iOS identifierForVendor, OS-provided model/name/version/metadata, battery status and local IPv4 addresses.
+- Public `device_info.dart` entry point and umbrella export; unavailable values return null and identifier scope is documented.
+
 ## 1.0.0
 
 ### First stable release
