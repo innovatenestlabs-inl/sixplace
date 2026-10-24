@@ -1,4 +1,4 @@
-## Unreleased
+## 1.0.1 — 2026-10-24
 
 - Added one developer-facing `SPDeviceInfo.getRegistrationId()` for all Flutter platforms, including web, backed by persisted app/browser-installation UUID. The optional `deviceId` remains OS-specific metadata; snapshots expose `installationId` separately.
 - Updated AI prompt, README, and device tests; storage failure does not silently generate a disposable registration ID.
