@@ -16,7 +16,6 @@ class SPDeviceSnapshot {
     required this.platform,
     required this.deviceId,
     required this.deviceIdSource,
-    this.installationId,
     required this.model,
     required this.name,
     required this.manufacturer,
@@ -33,8 +32,6 @@ class SPDeviceSnapshot {
   final String platform;
   final String? deviceId;
   final String? deviceIdSource;
-  final String? installationId;
-  String? get bestAvailableId => deviceId ?? installationId;
   final String? model;
   final String? name;
   final String? manufacturer;
@@ -58,8 +55,6 @@ class SPDeviceSnapshot {
     'platform': platform,
     'deviceId': deviceId,
     'deviceIdSource': deviceIdSource,
-    'installationId': installationId,
-    'bestAvailableId': bestAvailableId,
     'model': model,
     'name': name,
     'manufacturer': manufacturer,
