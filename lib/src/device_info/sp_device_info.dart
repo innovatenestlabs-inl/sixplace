@@ -4,6 +4,7 @@ import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/foundation.dart';
 
 import 'sp_local_ip.dart';
+import 'sp_installation_identity.dart';
 
 /// Information made available by the OS, not a hardware fingerprint.
 ///
@@ -84,6 +85,11 @@ class SPDeviceInfo {
 
   static final DeviceInfoPlugin _device = DeviceInfoPlugin();
   static final Battery _battery = Battery();
+
+  /// Use this for registration on Android, iOS, Windows, macOS, Linux and web.
+  /// Same UUID across launches while app/browser storage persists.
+  static Future<String> getRegistrationId() =>
+      SPInstallationIdentity.getRegistrationId();
 
   static Future<String?> getDeviceId() async {
     if (kIsWeb) return null;
