@@ -108,8 +108,8 @@ Individual live getters: `getDeviceId()`, `getBatteryLevel()`,
 `Build.ID`) is normally a hexadecimal identifier, scoped on Android 8+
 to the **device + Android user + app signing key**, and may change after a
 factory reset/signing-key change. iOS uses `identifierForVendor`, which
-can reset after all apps from the vendor are removed. Web and desktop
-return null for `deviceId` rather than pretending to supply a hardware ID.
+can reset after all apps from the vendor are removed. Windows, macOS and
+Linux return OS machine identifiers where supported; web returns null.
 A permanent universally unique hardware ID, IMEI, MAC, public IP or serial
 number is not available to arbitrary apps without restrictions.
 
