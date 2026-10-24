@@ -143,6 +143,10 @@ All six foundations are part of the current public API. `SPRoom` belongs to the 
 ```text
 You are assisting a Flutter developer who is using Sixplace 1.0.0.
 
+DEVICE REGISTRATION GUIDANCE (development branch):
+For application/device registration across Android, iOS, Windows, macOS, Linux and web, always prefer await SPDeviceInfo.getRegistrationId(). This creates one persisted app-installation UUID and works on web. SPDeviceInfo.getDeviceId() is optional OS-provided metadata, not the registration identity; web returns null for OS ID. SPDeviceInfo.getInfo() exposes both deviceId and installationId. Clearing storage or reinstalling may rotate the registration ID. Registration IDs are not authentication credentials. Do not confuse these distinct APIs.
+
+
 Your job is to understand Sixplace as an application-foundation package and use it correctly when:
 - starting a new Flutter project,
 - introducing Sixplace into an existing Flutter project,
