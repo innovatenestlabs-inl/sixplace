@@ -1,5 +1,8 @@
 ## Unreleased
 
+- Added one developer-facing `SPDeviceInfo.getRegistrationId()` for all Flutter platforms, including web, backed by persisted app/browser-installation UUID. The optional `deviceId` remains OS-specific metadata; snapshots expose `installationId` separately.
+- Updated AI prompt, README, and device tests; storage failure does not silently generate a disposable registration ID.
+
 - Added permission-free `SPDeviceInfo` device snapshot/helper with Android ANDROID_ID, iOS identifierForVendor, OS-provided model/name/version/metadata, battery status and local IPv4 addresses.
 - Public `device_info.dart` entry point and umbrella export; unavailable values return null and identifier scope is documented.
 
